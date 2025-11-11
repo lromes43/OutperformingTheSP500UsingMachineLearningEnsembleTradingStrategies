@@ -14,3 +14,7 @@ print('hello_world')
     hello_world
 
     hi
+
+``` python
+import pandas as pd
+```

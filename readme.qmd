@@ -20,3 +20,9 @@ print('hello_world')
 #| echo: false
 print("hi")
 ```
+
+
+```{python}
+#| eval: false
+import pandas as pd
+```
