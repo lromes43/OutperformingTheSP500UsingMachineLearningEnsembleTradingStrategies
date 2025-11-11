@@ -1,0 +1,22 @@
+---
+title: "test"
+format: gfm
+---
+
+## Introduction
+ 
+ examaple gfm document
+
+## Code 
+
+
+```{python}
+print('hello_world')
+
+```
+
+
+```{python}
+#| echo: false
+print("hi")
+```
