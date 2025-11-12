@@ -24,5 +24,7 @@ print("hi")
 
 ```{python}
 #| eval: false
+#| message: false
+#| warning: false
 import pandas as pd
 ```
