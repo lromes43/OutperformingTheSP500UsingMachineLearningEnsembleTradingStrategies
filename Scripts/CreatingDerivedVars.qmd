@@ -530,3 +530,31 @@ data['Movement'] = (data['Day_to_Day_Diff'] > 0).astype(int)
 
 data.to_csv("FINALDATA.csv", index=False)
 ```
+
+Merging Earnings with Final Data
+```{python}
+import pandas as pd
+original_data = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FINALDATA.csv")
+earnings_data = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/earnings.csv")
+```
+
+
+Created new column called Earnings_Date that creates same length of dates as the original data to merge.
+```{python}
+earnings_data['Earnings_Date'] = original_data['Date']
+earnings_data['Earnings_Today'] = (earnings_data['Date'] == earnings_data['Earnings_Date']).astype(int)
+```
+
+Concating the two datasets together.
+
+```{python}
+e2 = earnings_data.drop('Date', axis=1)
+e2_reorderd = e2.loc[:, ['Earnings_Date', 'Ticker', 'EPS Estimate', 'Reported EPS', 'Surprise(%)', 'Earnings_Today']]
+e2_reorderd['Earnings_Date'] = pd.to_datetime(e2_reorderd['Earnings_Date'])
+
+pd.concat([original_data, e2_reorderd], axis = 1)
+```
+
+
+
+
