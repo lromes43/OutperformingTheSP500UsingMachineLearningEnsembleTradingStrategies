@@ -790,6 +790,90 @@ test = pd.concat(Two_Week_SD , ignore_index=True)
 data = test
 ```
 
+Monhtly Standard Deviations
+
+```{python}
+import numpy as np
+Monthly_SD = []
+for t in data['Ticker'].unique():
+    subset = data[data['Ticker'] == t]
+    individual_sd = []
+    for i in range(0, len(subset)):
+        if i ==0:
+            sd = np.std(subset['Close'].iloc[i])
+        elif i ==1:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1]])
+        elif i ==2:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2]])
+        elif i ==3:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3]])
+        elif i == 4:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4]])
+        elif i ==5:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5]])
+        elif i ==6:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6]])
+        elif i ==7: 
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7]])
+        elif i ==8: 
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8]])
+        elif i ==9:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[1-9]])
+        elif i ==10:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[1-9], subset['Close'].iloc[1-10]])
+        elif i ==11:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11]])
+        elif i ==12: 
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12]])
+        elif i ==13:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13]])
+        elif i ==14:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13], subset['Close'].iloc[i-14]])
+        elif i ==15:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13], subset['Close'].iloc[i-14], subset['Close'].iloc[i-15]])
+        elif i ==16: 
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13], subset['Close'].iloc[i-14], subset['Close'].iloc[i-15], subset['Close'].iloc[i-16]])
+        elif i ==17: 
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13], subset['Close'].iloc[i-14], subset['Close'].iloc[i-15], subset['Close'].iloc[i-16], subset['Close'].iloc[i-17]])
+        elif i ==18: 
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13], subset['Close'].iloc[i-14], subset['Close'].iloc[i-15], subset['Close'].iloc[i-16], subset['Close'].iloc[i-17], subset['Close'].iloc[i-18]])
+        elif i ==19: 
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13], subset['Close'].iloc[i-14], subset['Close'].iloc[i-15], subset['Close'].iloc[i-16], subset['Close'].iloc[i-17], subset['Close'].iloc[i-18], subset['Close'].iloc[i-19]])
+        elif i ==20:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13], subset['Close'].iloc[i-14], subset['Close'].iloc[i-15], subset['Close'].iloc[i-16], subset['Close'].iloc[i-17], subset['Close'].iloc[i-18], subset['Close'].iloc[i-19], subset['Close'].iloc[i-20]])
+        elif i ==21:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13], subset['Close'].iloc[i-14], subset['Close'].iloc[i-15], subset['Close'].iloc[i-16], subset['Close'].iloc[i-17], subset['Close'].iloc[i-18], subset['Close'].iloc[i-19], subset['Close'].iloc[i-20], subset['Close'].iloc[i-21]])
+        elif i ==22: 
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13], subset['Close'].iloc[i-14], subset['Close'].iloc[i-15], subset['Close'].iloc[i-16], subset['Close'].iloc[i-17], subset['Close'].iloc[i-18], subset['Close'].iloc[i-19], subset['Close'].iloc[i-20], subset['Close'].iloc[i-21], subset['Close'].iloc[i-22]])
+        elif i ==23:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13], subset['Close'].iloc[i-14], subset['Close'].iloc[i-15], subset['Close'].iloc[i-16], subset['Close'].iloc[i-17], subset['Close'].iloc[i-18], subset['Close'].iloc[i-19], subset['Close'].iloc[i-20], subset['Close'].iloc[i-21], subset['Close'].iloc[i-22], subset['Close'].iloc[i-23]])
+        elif i ==24:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13], subset['Close'].iloc[i-14], subset['Close'].iloc[i-15], subset['Close'].iloc[i-16], subset['Close'].iloc[i-17], subset['Close'].iloc[i-18], subset['Close'].iloc[i-19], subset['Close'].iloc[i-20], subset['Close'].iloc[i-21], subset['Close'].iloc[i-22], subset['Close'].iloc[i-23], subset['Close'].iloc[i-24]])
+        elif i ==25:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13], subset['Close'].iloc[i-14], subset['Close'].iloc[i-15], subset['Close'].iloc[i-16], subset['Close'].iloc[i-17], subset['Close'].iloc[i-18], subset['Close'].iloc[i-19], subset['Close'].iloc[i-20], subset['Close'].iloc[i-21], subset['Close'].iloc[i-22], subset['Close'].iloc[i-23], subset['Close'].iloc[i-24], subset['Close'].iloc[i-25]])
+        elif i ==26:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13], subset['Close'].iloc[i-14], subset['Close'].iloc[i-15], subset['Close'].iloc[i-16], subset['Close'].iloc[i-17], subset['Close'].iloc[i-18], subset['Close'].iloc[i-19], subset['Close'].iloc[i-20], subset['Close'].iloc[i-21], subset['Close'].iloc[i-22], subset['Close'].iloc[i-23], subset['Close'].iloc[i-24], subset['Close'].iloc[i-25], subset['Close'].iloc[i-26]])
+        elif i ==27: 
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13], subset['Close'].iloc[i-14], subset['Close'].iloc[i-15], subset['Close'].iloc[i-16], subset['Close'].iloc[i-17], subset['Close'].iloc[i-18], subset['Close'].iloc[i-19], subset['Close'].iloc[i-20], subset['Close'].iloc[i-21], subset['Close'].iloc[i-22], subset['Close'].iloc[i-23], subset['Close'].iloc[i-24], subset['Close'].iloc[i-25], subset['Close'].iloc[i-26], 
+            subset['Close'].iloc[i-27]])
+        elif i ==28: 
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13], subset['Close'].iloc[i-14], subset['Close'].iloc[i-15], subset['Close'].iloc[i-16], subset['Close'].iloc[i-17], subset['Close'].iloc[i-18], subset['Close'].iloc[i-19], subset['Close'].iloc[i-20], subset['Close'].iloc[i-21], subset['Close'].iloc[i-22], subset['Close'].iloc[i-23], subset['Close'].iloc[i-24], subset['Close'].iloc[i-25], subset['Close'].iloc[i-26], 
+            subset['Close'].iloc[i-27], subset['Close'].iloc[i-28]])
+        elif i >=29: 
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13], subset['Close'].iloc[i-14], subset['Close'].iloc[i-15], subset['Close'].iloc[i-16], subset['Close'].iloc[i-17], subset['Close'].iloc[i-18], subset['Close'].iloc[i-19], subset['Close'].iloc[i-20], subset['Close'].iloc[i-21], subset['Close'].iloc[i-22], subset['Close'].iloc[i-23], subset['Close'].iloc[i-24], subset['Close'].iloc[i-25], subset['Close'].iloc[i-26], 
+            subset['Close'].iloc[i-27], subset['Close'].iloc[i-28], subset['Close'].iloc[i-29]])
+        individual_sd.append(float(sd))
+    subset['Monthly_SD'] = individual_sd
+    Monthly_SD.append(subset)
+
+test = pd.concat(Monthly_SD, ignore_index=True)
+data = test
+```
+
+```{python}
+data.to_feather('FinalDATAEXCEPTSTOCKSPLIT.feather', index=False)
+```
+
 
 
 
