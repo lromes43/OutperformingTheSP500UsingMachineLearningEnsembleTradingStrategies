@@ -545,15 +545,18 @@ earnings_data['Earnings_Date'] = original_data['Date']
 earnings_data['Earnings_Today'] = (earnings_data['Date'] == earnings_data['Earnings_Date']).astype(int)
 ```
 
-Concating the two datasets together.
+
 
 ```{python}
 e2 = earnings_data.drop('Date', axis=1)
 e2_reorderd = e2.loc[:, ['Earnings_Date', 'Ticker', 'EPS Estimate', 'Reported EPS', 'Surprise(%)', 'Earnings_Today']]
+
 e2_reorderd['Earnings_Date'] = pd.to_datetime(e2_reorderd['Earnings_Date'])
 
-pd.concat([original_data, e2_reorderd], axis = 1)
-```
+pd.merge(earnings_data, e2_reorderd, how = 'left', left_on=['Da'])
+``` 
+
+
 
 
 

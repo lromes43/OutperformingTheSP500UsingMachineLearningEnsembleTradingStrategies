@@ -43,7 +43,10 @@ for i, t in enumerate(tickers):
 
 
 all_earnings.columns = ['Ticker', 'Date', 'EPS Estimate', 'Reported EPS', 'Surprise(%)']
-all_earnings
+all_earnings.to_csv('earnings.csv', index=False)
+
+
+
 data = pd.read_csv("Data/FINALDATA.csv")
 data
 
