@@ -719,8 +719,76 @@ data = data.drop('index', axis = 1)
 ```
 
 
+Standard Deviation of Last Week
 
+```{python}
+import numpy as np
+Weekly_SD = []
+for t in data['Ticker'].unique():
+    subset = data[data['Ticker'] == t]
+    individual_sd = []
+    for i in range(0, len(subset)):
+        if i ==0:
+            sd = np.std(subset['Close'].iloc[i])
+        elif i ==1:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1]])
+        elif i ==2:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2]])
+        elif i ==3:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3]])
+        elif i >= 4:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4]])
+        individual_sd.append(float(sd))
+    subset['Weekly_SD'] = individual_sd
+    Weekly_SD.append(subset)
 
+test = pd.concat(Weekly_SD, ignore_index=True)
+data = test
+```
+
+Two Week Standard Deviation
+```{python}
+import numpy as np
+Two_Week_SD = []
+for t in data['Ticker'].unique():
+    subset = data[data['Ticker'] == t]
+    individual_sd = []
+    for i in range(0, len(subset)):
+        if i ==0:
+            sd = np.std(subset['Close'].iloc[i])
+        elif i ==1:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1]])
+        elif i ==2:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2]])
+        elif i ==3:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3]])
+        elif i == 4:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4]])
+        elif i ==5:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5]])
+        elif i ==6:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6]])
+        elif i ==7: 
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7]])
+        elif i ==8: 
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8]])
+        elif i ==9:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[1-9]])
+        elif i ==10:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[1-9], subset['Close'].iloc[1-10]])
+        elif i ==11:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11]])
+        elif i ==12: 
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12]])
+        elif i >=13:
+            sd = np.std([subset['Close'].iloc[i], subset['Close'].iloc[i-1], subset['Close'].iloc[i-2], subset['Close'].iloc[i-3], subset['Close'].iloc[i-4], subset['Close'].iloc[i-5], subset['Close'].iloc[i-6], subset['Close'].iloc[i-7], subset['Close'].iloc[i-8], subset['Close'].iloc[i-9], subset['Close'].iloc[i-10], subset['Close'].iloc[i - 11], subset['Close'].iloc[i-12], subset['Close'].iloc[i-13]])
+        individual_sd.append(float(sd))
+    subset['Two_Week_SD '] = individual_sd
+    Two_Week_SD .append(subset)
+
+test = pd.concat(Two_Week_SD , ignore_index=True)
+data = test
+```
 
 
 
