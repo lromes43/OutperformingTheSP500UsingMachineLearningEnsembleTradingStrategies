@@ -885,23 +885,13 @@ import pandas as pd
 data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FinalDataNoStockSplit.feather")
 ```
 
-
-```{python}
-tickers = data['Ticker'].unique().tolist()
-print(tickers)
-
-```
-
-
-
+Pulling all the stock splits from companies in SP500 in selected dates
 
 ```{python}
 import yfinance as yf
 import pandas as pd
 
 tickers_list = data['Ticker'].unique().tolist() 
-
-
 tickers = tickers_list 
 
 start = "2024-11-11"
@@ -920,6 +910,10 @@ for t in tickers:
 
 df = pd.DataFrame(all_splits)
 print(df)
+```
+
+```{python}
+df.to_csv("StockSplitsDF.csv", index=False)
 ```
 
 
