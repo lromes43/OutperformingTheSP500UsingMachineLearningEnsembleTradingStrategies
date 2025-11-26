@@ -879,15 +879,48 @@ Saving to feather so smaller file size
 data.to_feather('FinalDataNoStockSplit.feather')
 ```
 
-
+Loading in Created feather file
 ```{python}
 import pandas as pd
 data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FinalDataNoStockSplit.feather")
 ```
 
 
+```{python}
+tickers = data['Ticker'].unique().tolist()
+print(tickers)
+
+```
 
 
+
+
+```{python}
+import yfinance as yf
+import pandas as pd
+
+tickers_list = data['Ticker'].unique().tolist() 
+
+
+tickers = tickers_list 
+
+start = "2024-11-11"
+end = "2025-11-10"
+
+all_splits = []
+
+for t in tickers:
+    ticker_splits = yf.Ticker(t).splits 
+    
+    if ticker_splits is not None and len(ticker_splits) > 0:
+        temp = ticker_splits[(ticker_splits.index >= start) & (ticker_splits.index <= end)]
+        for date, ratio in temp.items():
+            all_splits.append({"Ticker": t, "Date": date, "Split Ratio": ratio})
+            print(t, date, ratio)
+
+df = pd.DataFrame(all_splits)
+print(df)
+```
 
 
 
