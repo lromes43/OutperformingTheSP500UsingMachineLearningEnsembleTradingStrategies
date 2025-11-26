@@ -937,6 +937,35 @@ merged_df['Split_Indicator'] = Split
 
 ```
 
+5 Day Return %
+
+```{python}
+Five_Day_Percent_Diff_list = []
+
+for ticker in merged_df['Ticker'].unique():
+    subset = merged_df[merged_df['Ticker'] == ticker].copy()
+    five_day_percent_diff = []
+    
+    for i in range(0, len(subset)):
+        if i == 0:
+           five_day_diff = (subset['Close'].iloc[i] - subset['Open'].iloc[i]) / subset['Open'].iloc[i]
+        elif i == 1:
+            five_day_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-1]) / subset['Close'].iloc[i-1]
+        elif i == 2:
+            
+            five_day_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-2]) / subset['Close'].iloc[i-2]
+        elif i == 3: 
+            
+            five_day_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-3]) / subset['Close'].iloc[i-3]
+        elif i >= 4: 
+           
+            five_day_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-4]) / subset['Close'].iloc[i-4]
+        five_day_percent_diff.append(five_day_diff)
+    subset['Five_Day_Percent_Diff'] = five_day_percent_diff 
+    Five_Day_Percent_Diff_list.append(subset)
+
+test = pd.concat(Five_Day_Percent_Diff_list, ignore_index=True)
+```
 
 Have day to day diff
 day to day % diff
@@ -944,6 +973,5 @@ day to day % diff
 Have one day % increase(Daily_Return)
 movement
 
-do 5 day return 
 
 
