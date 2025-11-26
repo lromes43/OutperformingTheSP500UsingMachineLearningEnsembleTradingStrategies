@@ -967,11 +967,33 @@ for ticker in merged_df['Ticker'].unique():
 test = pd.concat(Five_Day_Percent_Diff_list, ignore_index=True)
 ```
 
-Have day to day diff
-day to day % diff
 
-Have one day % increase(Daily_Return)
-movement
+Reordering Columns
+```{python}
+cols_reordered = [
+    'Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Ticker', 'Day_Range', 
+    'SMA_5', 'SMA_12', 'SMA_15', 'SMA_20', 'SMA_26', 'SMA_30', 'SMA_50', 
+    'EMA_5', 'EMA_12', 'EMA_26', 'EMA_50', 'MACD', 'RSI', 'Bollinger_Band_Middle', 
+    'SD', 'Bollinger_Band_Upper', 'Bollinger_Band_Lower', 'OBV', '^VIX', 
+    'EPS Estimate', 'Reported EPS', 'Surprise(%)', 'earnings_bool', 
+    'Split Ratio',        
+    'Split_Indicator', 'Daily_Return', 'Day_to_Day_Diff', 
+    'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff', 
+    'weekly_averages', 'Two_week_averages', 'Monthly_Average', 
+    'Weekly_SD', 
+    'Two_Week_SD ',      
+    'Monthly_SD', 'Movement'
+]
 
+
+df_reordered = test.loc[:, cols_reordered]
+df_reordered.to_feather("FINALSP00Data.feather")
+```
+
+
+
+```{python}
+final_data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FINALSP00Data.feather")
+```
 
 
