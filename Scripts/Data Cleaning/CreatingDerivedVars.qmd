@@ -993,7 +993,147 @@ df_reordered.to_feather("FINALSP00Data.feather")
 
 
 ```{python}
-final_data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FINALSP00Data.feather")
+import pandas as pd
+
+data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FINALSP00Data.feather")
+
 ```
 
 
+2 week return
+
+```{python}
+
+Two_Week_Percent_Diff= []
+
+for ticker in data['Ticker'].unique():
+    subset = data[data['Ticker'] == ticker].copy()
+    two_week_percent_diff = []
+    
+    for i in range(0, len(subset)):
+        if i == 0:
+           two_week_diff = (subset['Close'].iloc[i] - subset['Open'].iloc[i]) / subset['Open'].iloc[i]
+        elif i == 1:
+            two_week_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-1]) / subset['Close'].iloc[i-1]
+        elif i == 2:
+            two_week_diff  = (subset['Close'].iloc[i] - subset['Close'].iloc[i-2]) / subset['Close'].iloc[i-2]
+        elif i == 3: 
+            two_week_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-3]) / subset['Close'].iloc[i-3]
+        elif i == 4: 
+            two_week_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-4]) / subset['Close'].iloc[i-4]
+        elif i == 5: 
+            two_week_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-5]) / subset['Close'].iloc[i-5]
+        elif i ==6: 
+            two_week_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-6]) / subset['Close'].iloc[i-6]
+        elif i ==7: 
+            two_week_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-7]) / subset['Close'].iloc[i-7]
+        elif i ==8: 
+            two_week_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-8]) / subset['Close'].iloc[i-8]
+        elif i ==9:
+            two_week_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-9]) / subset['Close'].iloc[i-9]
+        elif i ==10: 
+            two_week_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-10]) / subset['Close'].iloc[i-10]
+        elif i ==11: 
+            two_week_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-11]) / subset['Close'].iloc[i-11]
+        elif i ==12:
+            two_week_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-12]) / subset['Close'].iloc[i-12]
+        elif i >=13: 
+            two_week_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-13]) / subset['Close'].iloc[i-13]
+        two_week_percent_diff.append(two_week_diff)
+    subset['Two_Week_Percent_Diff'] =  two_week_percent_diff
+    Two_Week_Percent_Diff.append(subset)
+
+test = pd.concat(Two_Week_Percent_Diff, ignore_index=True)
+```
+
+
+30 Day Return 
+
+
+```{python}
+data = test
+
+Monthly_Percent_Diff= []
+for ticker in data['Ticker'].unique():
+    subset = data[data['Ticker'] == ticker].copy()
+    monthly_percent_diff = []
+    
+    for i in range(0, len(subset)):
+        if i == 0:
+           month_diff = (subset['Close'].iloc[i] - subset['Open'].iloc[i]) / subset['Open'].iloc[i]
+        elif i == 1:
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-1]) / subset['Close'].iloc[i-1]
+        elif i == 2:
+            month_diff  = (subset['Close'].iloc[i] - subset['Close'].iloc[i-2]) / subset['Close'].iloc[i-2]
+        elif i == 3: 
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-3]) / subset['Close'].iloc[i-3]
+        elif i == 4: 
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-4]) / subset['Close'].iloc[i-4]
+        elif i == 5: 
+            month_diff= (subset['Close'].iloc[i] - subset['Close'].iloc[i-5]) / subset['Close'].iloc[i-5]
+        elif i ==6: 
+            month_diff= (subset['Close'].iloc[i] - subset['Close'].iloc[i-6]) / subset['Close'].iloc[i-6]
+        elif i ==7: 
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-7]) / subset['Close'].iloc[i-7]
+        elif i ==8: 
+            month_diff= (subset['Close'].iloc[i] - subset['Close'].iloc[i-8]) / subset['Close'].iloc[i-8]
+        elif i ==9:
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-9]) / subset['Close'].iloc[i-9]
+        elif i ==10: 
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-10]) / subset['Close'].iloc[i-10]
+        elif i ==11: 
+            month_diff= (subset['Close'].iloc[i] - subset['Close'].iloc[i-11]) / subset['Close'].iloc[i-11]
+        elif i ==12:
+            month_diff= (subset['Close'].iloc[i] - subset['Close'].iloc[i-12]) / subset['Close'].iloc[i-12]
+        elif i ==13: 
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-13]) / subset['Close'].iloc[i-13]
+        elif i ==14: 
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-14]) / subset['Close'].iloc[i-14]
+        elif i ==15:
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-15]) / subset['Close'].iloc[i-15]
+        elif i ==16: 
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-16]) / subset['Close'].iloc[i-16]
+        elif i ==17: 
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-17]) / subset['Close'].iloc[i-17]
+        elif i ==18:
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-18]) / subset['Close'].iloc[i-18]
+        elif i ==19: 
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-19]) / subset['Close'].iloc[i-19]
+        elif i ==20:
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-20]) / subset['Close'].iloc[i-20]
+        elif i ==21:
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-21]) / subset['Close'].iloc[i-21]
+        elif i ==22: 
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-22]) / subset['Close'].iloc[i-22]
+        elif i ==23:
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-23]) / subset['Close'].iloc[i-23]
+        elif i ==24:
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-24]) / subset['Close'].iloc[i-24]
+        elif i ==25:
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-25]) / subset['Close'].iloc[i-25]
+        elif i ==26:
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-26]) / subset['Close'].iloc[i-26]
+        elif i ==27:
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-27]) / subset['Close'].iloc[i-27]
+        elif i ==28:
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-28]) / subset['Close'].iloc[i-28]
+        elif i >=29: 
+            month_diff = (subset['Close'].iloc[i] - subset['Close'].iloc[i-29]) / subset['Close'].iloc[i-29]
+        monthly_percent_diff.append(month_diff)
+    subset['Monthly_Percent_Diff'] =  monthly_percent_diff
+    Monthly_Percent_Diff.append(subset)
+
+test = pd.concat(Monthly_Percent_Diff, ignore_index=True)
+```
+
+
+```{python}
+data = test
+data.to_feather("FINALDATANov26.feather")
+```
+
+
+```{python}
+final = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FINALDATANov26.feather")
+final
+```
