@@ -1127,8 +1127,29 @@ test = pd.concat(Monthly_Percent_Diff, ignore_index=True)
 ```
 
 
+
+
 ```{python}
-data = test
+cols_reordered = [
+    'Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Ticker', 'Day_Range',
+       'SMA_5', 'SMA_12', 'SMA_15', 'SMA_20', 'SMA_26', 'SMA_30', 'SMA_50',
+       'EMA_5', 'EMA_12', 'EMA_26', 'EMA_50', 'MACD', 'RSI',
+       'Bollinger_Band_Middle', 'SD', 'Bollinger_Band_Upper',
+       'Bollinger_Band_Lower', 'OBV', '^VIX', 'EPS Estimate', 'Reported EPS',
+       'Surprise(%)', 'earnings_bool', 'Split Ratio', 'Split_Indicator',
+    'weekly_averages','Weekly_SD',  'Two_week_averages', 'Two_Week_SD ', 'Monthly_SD','Monthly_Average', 'Daily_Return', 'Day_to_Day_Diff', 'Day_to_Day_Percent_Diff',
+       'Five_Day_Percent_Diff',
+       'Movement', 'Two_Week_Percent_Diff', 'Monthly_Percent_Diff'
+]
+
+
+
+
+df_reordered = test.loc[:, cols_reordered]
+```
+
+```{python}
+data = df_reordered
 data.to_feather("FINALDATANov26.feather")
 ```
 
