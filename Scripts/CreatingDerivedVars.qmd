@@ -746,6 +746,10 @@ test = pd.concat(Weekly_SD, ignore_index=True)
 data = test
 ```
 
+```{python}
+data = data.drop('level_0', axis = 1)
+```
+
 Two Week Standard Deviation
 ```{python}
 import numpy as np
@@ -870,12 +874,16 @@ test = pd.concat(Monthly_SD, ignore_index=True)
 data = test
 ```
 
+Saving to feather so smaller file size
 ```{python}
-data.to_feather('FinalDATAEXCEPTSTOCKSPLIT.feather', index=False)
+data.to_feather('FinalDataNoStockSplit.feather')
 ```
 
 
-
+```{python}
+import pandas as pd
+data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FinalDataNoStockSplit.feather")
+```
 
 
 
