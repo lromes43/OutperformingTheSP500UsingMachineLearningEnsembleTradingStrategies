@@ -17,6 +17,7 @@ from sklearn.inspection import partial_dependence
 import matplotlib.pyplot as plt
 import dtreeviz
 from datetime import date
+from plotnine import *
 ```
 
 Loading in Data
@@ -78,4 +79,45 @@ print(f" train UP: {train_distribution_up_movement_perc:.3f}\n train DOWN: {trai
 ```
 
 Can see that the distribution between the binary up/down variables is fairly consistent. Train is slightly up only means that up until 08/29/2025 market did a little better overall.
+
+
+Want to melt the data so can see overall how good of a predictor each variable is
+
+```{python}
+melted_data = data.melt(
+    
+    id_vars=['Date', 'Ticker', 'Movement'], 
+    
+    value_vars=[
+       'Open', 'High', 'Low', 'Close', 'Volume', 'Day_Range',
+       'SMA_5', 'SMA_12', 'SMA_15', 'SMA_20', 'SMA_26', 'SMA_30', 'SMA_50',
+       'EMA_5', 'EMA_12', 'EMA_26', 'EMA_50', 'MACD', 'RSI',
+       'Bollinger_Band_Middle', 'SD', 'Bollinger_Band_Upper',
+       'Bollinger_Band_Lower', 'OBV', '^VIX', 'EPS Estimate', 'Reported EPS',
+       'Surprise(%)', 'earnings_bool', 'Split Ratio', 'Split_Indicator',
+       'weekly_averages', 'Weekly_SD', 'Two_week_averages', 'Two_Week_SD ',
+       'Monthly_SD', 'Monthly_Average', 'Daily_Return', 'Day_to_Day_Diff',
+       'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff',
+       'Two_Week_Percent_Diff', 'Monthly_Percent_Diff'],
+       
+    var_name='Metric',
+    value_name='Value'
+)
+```
+
+```{python}
+plot1 = (
+    ggplot(melted_data, aes(x='Value'))
+    + geom_density(aes(fill='Movement'), alpha=0.5)
+    + facet_wrap('~Metric', scales='free')
+    + labs(
+        title='Density Distribution of Technical Indicators by Daily Price Movement',
+        x='Value of Metric',
+        fill='Price Movement'
+    )
+    + theme_minimal()
+)
+
+plot1.save(filename='density_plot_by_movement.jpg', width=10, height=8, units='in', dpi=300)
+```
 
