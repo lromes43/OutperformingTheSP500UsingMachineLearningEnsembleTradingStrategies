@@ -916,9 +916,34 @@ print(df)
 df.to_csv("StockSplitsDF.csv", index=False)
 ```
 
+```{python}
+split = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/StockSplitsDF.csv")
+split['Date'] = pd.to_datetime(split['Date'], utc=True).dt.date
+data['Date'] = pd.to_datetime(data['Date'], utc=True).dt.date
+merged_df = pd.merge(data, split, how = 'left', left_on=['Date', 'Ticker'], right_on=['Date', 'Ticker'])
+
+
+Split = []
+for i in range(0, len(merged_df)):
+    current_value = merged_df['Split Ratio'].iloc[i]
+    if not pd.isna(current_value): 
+        Split.append(1)
+    else:
+        Split.append(0)
+
+merged_df['Split_Indicator'] = Split
 
 
 
+```
 
+
+Have day to day diff
+day to day % diff
+
+Have one day % increase(Daily_Return)
+movement
+
+do 5 day return 
 
 
