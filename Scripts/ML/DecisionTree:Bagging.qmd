@@ -172,7 +172,14 @@ bagged2_accuracy = accuracy_score(y_test, ypred)
 oob_df = pd.DataFrame(oob_errors, columns=['n_trees', 'oob_error'])
 oob_df
 
+oob_plot = (ggplot(aes(x = 'n_trees',
+                       y = 'oob_error'))+
+                       ylim(0.3,0.315) +
+                    geom_point(color = 'red')+
+                    geom_smooth(color = 'blue'))  
 
+
+oob_plot
 ```
 
 
