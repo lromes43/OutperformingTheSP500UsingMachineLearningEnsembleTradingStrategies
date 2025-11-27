@@ -1,0 +1,181 @@
+---
+title: "Untitled"
+format: html
+---
+
+
+```{python}
+import pandas as pd
+import numpy as np
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
+from sklearn import preprocessing
+from sklearn.ensemble import BaggingClassifier
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import cross_val_score
+from sklearn.inspection import partial_dependence
+import matplotlib.pyplot as plt
+import dtreeviz
+from datetime import date
+from plotnine import *
+import pickle
+import joblib
+```
+
+
+```{python}
+train = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TrainData.feather")
+test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather")
+```
+
+
+```{python}
+cols_to_drop = ['Date', 'Day_to_Day_Diff', 'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff', 'Two_Week_Percent_Diff', 'Monthly_Percent_Diff', 'Daily_Return']
+
+X_train = train.drop(columns=cols_to_drop + ['Movement'])
+y_train = train['Movement']
+
+X_test = test.drop(columns=cols_to_drop + ['Movement'])
+y_test = test['Movement']
+
+X_train_final = pd.get_dummies(X_train, drop_first=True)
+X_test_final = pd.get_dummies(X_test, drop_first = True)
+X_test = X_test_final.reindex(columns=X_train_final.columns, fill_value=0)
+
+le = LabelEncoder()
+y_train_enc = le.fit_transform(y_train)
+
+```
+
+Creating Tree
+
+
+```{python}
+tree = DecisionTreeClassifier(random_state=123, max_depth=4)
+tree.fit(X_train_final, y_train_enc)
+```
+
+
+```{python}
+y_pred_enc = tree.predict(X_test)
+y_pred_final = le.inverse_transform(y_pred_enc)
+accuracy = accuracy_score(y_test, y_pred_final)
+
+```
+
+Confusion Matrix 
+
+
+```{python}
+cm = confusion_matrix(y_test, y_pred_final)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels= le.classes_)
+disp.plot(cmap = "Blues")
+plt.show()
+```
+
+
+Bagging
+
+
+```{python}
+bagged_model = BaggingClassifier(
+    n_estimators=300,
+    max_samples=1.0,
+    max_features=1.0,
+    bootstrap=True,
+    bootstrap_features=False,
+    oob_score=True,
+    n_jobs=-1,
+    random_state=123
+
+)
+
+bagged_model.fit(X_train_final, y_train_enc)
+```
+
+```{python}
+oob_score = bagged_model.oob_score_
+ypred_enc = bagged_model.predict(X_test_final)
+ypred = le.inverse_transform(ypred_enc)
+bagged_accuracy = accuracy_score(y_test, ypred)
+```
+
+Confusion Matrix 
+
+```{python}
+cm = confusion_matrix(y_test, ypred_enc)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=le.classes_)
+disp.plot(cmap = "Blues")
+plt.show()
+
+```
+
+Saving the models
+
+```{python}
+# Save the Decision Tree model
+filename_tree = 'decision_tree_model.pkl'
+with open(filename_tree, 'wb') as file:
+    pickle.dump(tree, file)
+
+# Save the Bagged Model
+filename_bagged = 'bagged_ensemble_model.pkl'
+with open(filename_bagged, 'wb') as file:
+    pickle.dump(bagged_model, file)
+```
+
+Loading the models
+
+```{python}
+with open('/Users/lukeromes/Desktop/Personal/Sp500Project/Scripts/ML/decision_tree_model.pkl', 'rb') as file:
+    loaded_model = pickle.load(file)
+```
+
+
+```{python}
+ypred_enc = loaded_model.predict(X_test_final)
+ypred = le.inverse_transform(ypred_enc)
+accuracy = accuracy_score(y_test, ypred)
+```
+
+
+```{python}
+n_trees = range(50,750,30)
+oob_errors = []
+
+for n in n_trees:
+    bagged_model2 = BaggingClassifier(
+        estimator=DecisionTreeClassifier(random_state=123),
+        n_estimators=n,
+        oob_score=True,
+        n_jobs=-1,
+        random_state=123
+    )
+    bagged_model2.fit(X_train_final,y_train_enc)
+    oob_error = 1 - bagged_model2.oob_score_
+    oob_errors.append((n, oob_error))
+
+```
+
+```{python}
+final_model_filename = 'bagged_classifier_n740.joblib'
+joblib.dump(bagged_model2, final_model_filename)
+```
+
+```{python}
+ypred_enc = bagged_model2.predict(X_test_final)
+ypred = le.inverse_transform(ypred_enc)
+bagged2_accuracy = accuracy_score(y_test, ypred)
+```
+
+```{python}
+oob_df = pd.DataFrame(oob_errors, columns=['n_trees', 'oob_error'])
+oob_df
+
+
+```
+
+
+```{python}
+bagged_model = joblib.load('/Users/lukeromes/Desktop/Personal/Sp500Project/Scripts/ML/bagged_classifier_n740.joblib')
+```
