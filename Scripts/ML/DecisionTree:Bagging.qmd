@@ -24,6 +24,7 @@ import joblib
 
 
 ```{python}
+
 train = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TrainData.feather")
 test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather")
 ```
