@@ -211,15 +211,72 @@ plt.show()
 ```
 Getting 53.9% accuracy
 
-
-
 ```{python}
 bagged_optimal_iterations = final_bagged
 final_model_filename = 'bagged_optimal_iterations.joblib'
 joblib.dump(bagged_optimal_iterations , final_model_filename)
 ```
 
+
+Variable Importance
+
 ```{python}
+n_features = X_train_final.shape[1]
+global_importance = np.zeros(n_features, dtype=float)
+
+has_feature_subsampling = hasattr(final_bagged, "estimators_features_") and final_bagged.estimators_features_ is not None
+
+num_used_estimators = 0
+for i, est in enumerate(final_bagged.estimators_):
+    if not hasattr(est, "feature_importances_"):
+        continue
+
+    fi = est.feature_importances_ 
+    if has_feature_subsampling:
+        feats_idx = final_bagged.estimators_features_[i]
+        tmp = np.zeros(n_features, dtype=float)
+        tmp[feats_idx] = fi
+        global_importance += tmp
+    else:
+       
+        global_importance += fi
+
+    num_used_estimators += 1 
+
+
+if num_used_estimators > 0:
+    global_importance /= num_used_estimators
+else:
+    raise RuntimeError("No usable base estimators with feature_importances_.")
+
+
+imp_df = (
+    pd.DataFrame({
+        "feature": X_train_final.columns,
+        "importance": global_importance
+    })
+    .sort_values("importance", ascending=False)
+    .reset_index(drop=True)
+)
+```
+
+```{python}
+top_k = 10
+imp_top = imp_df.head(top_k).copy() 
+
+
+(
+    ggplot(imp_top, aes(x="feature", y="importance"))
+    + geom_col(fill= "blue")
+    + coord_flip()
+    + scale_y_continuous(expand=(0.0, 0.0))
+    + labs(
+        title=f"Variable Importance — Bagging (Top {top_k})",
+        x="Feature",
+        y="Mean Importance (across trees)"
+    )
+    + theme_minimal()
+)
 
 ```
 
