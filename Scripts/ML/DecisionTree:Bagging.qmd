@@ -31,7 +31,8 @@ test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/Test
 
 
 ```{python}
-cols_to_drop = ['Date', 'Day_to_Day_Diff', 'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff', 'Two_Week_Percent_Diff', 'Monthly_Percent_Diff', 'Daily_Return']
+cols_to_drop = ['Date', 'Day_to_Day_Diff', 'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff', 'Two_Week_Percent_Diff', 'Monthly_Percent_Diff', 'Daily_Return', 'Day_Range']
+
 
 X_train = train.drop(columns=cols_to_drop + ['Movement'])
 y_train = train['Movement']
@@ -115,36 +116,28 @@ Saving the models
 
 ```{python}
 # Save the Decision Tree model
-filename_tree = 'decision_tree_model.pkl'
+filename_tree = 'tree.pkl'
 with open(filename_tree, 'wb') as file:
     pickle.dump(tree, file)
 
 # Save the Bagged Model
-filename_bagged = 'bagged_ensemble_model.pkl'
-with open(filename_bagged, 'wb') as file:
-    pickle.dump(bagged_model, file)
+import joblib
+file_name = 'bagged_ensemble_model.pkl'
+joblib.dump(bagged_model, file_name)
 ```
 
-Loading the models
+Determining Optimal Number Iterations
 
 ```{python}
-with open('/Users/lukeromes/Desktop/Personal/Sp500Project/Scripts/ML/decision_tree_model.pkl', 'rb') as file:
-    loaded_model = pickle.load(file)
-```
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import BaggingClassifier
 
+from tqdm import tqdm
 
-```{python}
-ypred_enc = loaded_model.predict(X_test_final)
-ypred = le.inverse_transform(ypred_enc)
-accuracy = accuracy_score(y_test, ypred)
-```
-
-
-```{python}
-n_trees = range(50,750,30)
+n_trees = range(10, 1000, 100)
 oob_errors = []
 
-for n in n_trees:
+for n in tqdm(n_trees, desc="Training Bagging Models"):
     bagged_model2 = BaggingClassifier(
         estimator=DecisionTreeClassifier(random_state=123),
         n_estimators=n,
@@ -152,16 +145,18 @@ for n in n_trees:
         n_jobs=-1,
         random_state=123
     )
-    bagged_model2.fit(X_train_final,y_train_enc)
-    oob_error = 1 - bagged_model2.oob_score_
-    oob_errors.append((n, oob_error))
+
+    bagged_model2.fit(X_train_final, y_train_enc)
+    if hasattr(bagged_model2, 'oob_score_'):
+        oob_error = 1 - bagged_model2.oob_score_
+        oob_errors.append((n, oob_error))
+    else:
+        print(f"OOB score not available for n_estimators={n}")
+
+print("OOB Errors calculated successfully.")
 
 ```
 
-```{python}
-final_model_filename = 'bagged_classifier_n740.joblib'
-joblib.dump(bagged_model2, final_model_filename)
-```
 
 ```{python}
 ypred_enc = bagged_model2.predict(X_test_final)
@@ -171,8 +166,13 @@ bagged2_accuracy = accuracy_score(y_test, ypred)
 
 ```{python}
 oob_df = pd.DataFrame(oob_errors, columns=['n_trees', 'oob_error'])
-oob_df
+min_error_index = oob_df['oob_error'].idxmin()
+min_error = float(oob_df.loc[min_error_index, 'oob_error'])
+best_num_trees =int(oob_df.loc[min_error_index, 'n_trees'])
+```
 
+
+```{python}
 oob_plot = (ggplot(aes(x = 'n_trees',
                        y = 'oob_error'))+
                        ylim(0.3,0.315) +
@@ -183,24 +183,43 @@ oob_plot = (ggplot(aes(x = 'n_trees',
 oob_plot
 ```
 
-
 ```{python}
-bagged_model = joblib.load('/Users/lukeromes/Desktop/Personal/Sp500Project/Scripts/ML/bagged_classifier_n740.joblib')
+min_error = 0.311
+best_number_trees = 710
+
+
+final_bagged = BaggingClassifier(
+     estimator=DecisionTreeClassifier(random_state=123),
+     n_estimators=best_number_trees,
+     oob_score=True,
+     n_jobs=-1,
+     random_state=123
+    )
+final_bagged.fit(X_train_final, y_train_enc)
 ```
 
+```{python}
+optimal_iterations_yhat_enc = final_bagged.predict(X_test_final)
+optimal_iterations_yhat = le.inverse_transform(optimal_iterations_yhat_enc)
+optimal_iterations_acc = accuracy_score(y_test, optimal_iterations_yhat )
+cm = confusion_matrix(y_test, optimal_iterations_yhat )
+optimal_uterations_plot = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=le.classes_)
+optimal_uterations_plot.plot(cmap = "Blues")
+plt.title("Confusion Matrix for Optimal Iterations")
+plt.show()
+
+```
+Getting 53.9% accuracy
 
 
 
 ```{python}
-import pickle
-# Check the path carefully! Use the correct filename
-file_path = '/Users/lukeromes/Desktop/Personal/Sp500Project/Scripts/ML/decision_tree_model.pkl' 
-with open(file_path, 'rb') as file:
-    loaded_model = pickle.load(file) # This is the correct loading function
+bagged_optimal_iterations = final_bagged
+final_model_filename = 'bagged_optimal_iterations.joblib'
+joblib.dump(bagged_optimal_iterations , final_model_filename)
 ```
-
 
 ```{python}
-import joblib
-loaded_model = joblib.load('decision_tree_model.pkl')
+
 ```
+
