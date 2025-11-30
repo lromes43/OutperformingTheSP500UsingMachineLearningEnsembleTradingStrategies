@@ -187,3 +187,20 @@ oob_plot
 ```{python}
 bagged_model = joblib.load('/Users/lukeromes/Desktop/Personal/Sp500Project/Scripts/ML/bagged_classifier_n740.joblib')
 ```
+
+
+
+
+```{python}
+import pickle
+# Check the path carefully! Use the correct filename
+file_path = '/Users/lukeromes/Desktop/Personal/Sp500Project/Scripts/ML/decision_tree_model.pkl' 
+with open(file_path, 'rb') as file:
+    loaded_model = pickle.load(file) # This is the correct loading function
+```
+
+
+```{python}
+import joblib
+loaded_model = joblib.load('decision_tree_model.pkl')
+```
