@@ -1,0 +1,174 @@
+---
+title: "Untitled"
+format: html
+---
+
+Classification XGBoost
+
+
+```{python}
+import pandas as pd 
+import numpy as np   
+from plotnine import *  
+import xgboost as xgb 
+from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.impute import SimpleImputer
+from sklearn.metrics import (
+    accuracy_score, log_loss, roc_auc_score, confusion_matrix, classification_report, ConfusionMatrixDisplay, f1_score
+)
+from sklearn.model_selection import ParameterGrid
+from tqdm import tqdm 
+import matplotlib.pyplot as plt
+import shap
+from sklearn.metrics import roc_curve, roc_auc_score
+from sklearn.preprocessing import StandardScaler
+```
+
+
+```{python}
+train = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TrainData.feather")
+test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather")
+```
+
+
+
+```{python}
+X_train_raw = train.drop(['Date', 'Day_to_Day_Diff', 'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff', 'Two_Week_Percent_Diff', 'Monthly_Percent_Diff', 'Daily_Return', 'Day_Range', 'Movement'], axis = 1)
+
+X_test_raw = test.drop(['Date', 'Day_to_Day_Diff', 'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff', 'Two_Week_Percent_Diff', 'Monthly_Percent_Diff', 'Daily_Return', 'Day_Range', 'Movement'], axis = 1)
+
+X_train_raw = pd.get_dummies(X_train_raw, drop_first=True)
+X_test_raw = pd.get_dummies(X_test_raw, drop_first=True)
+
+
+X_train_final = X_train_raw.apply(pd.to_numeric, errors = 'coerce')
+X_test_final = X_test_raw.apply(pd.to_numeric, errors = 'coerce')
+
+y_train_final = pd.Categorical(train['Movement'])
+y_test_final = pd.Categorical(test['Movement'])
+dtrain = xgb.DMatrix(data = X_train_final, label = y_train_final)
+dtest = xgb.DMatrix(data = X_test_final, label = y_test_final)
+
+```
+
+Fitting initial XGBoost
+```{python}
+params = {
+    "objective":"binary:logistic",
+    "eval_metric": ["auc", "error"],
+    "seed":42
+}
+num_boost_rounds = 300
+
+
+watchlist = [(dtrain, "training")]
+booster = xgb.train(
+    params, 
+    dtrain,
+    num_boost_round = num_boost_rounds,
+    evals = watchlist,
+    verbose_eval = 50
+)
+```
+
+Predicting Initial
+
+```{python}
+yhat_enc = booster.predict(dtest)
+yhat_enc
+test_pred_classification = (yhat_enc >= 0.5).astype(int)
+
+
+cm = confusion_matrix(y_test_final, test_pred_classification)
+initial_boosted_cm = ConfusionMatrixDisplay(confusion_matrix=cm)
+initial_boosted_cm.plot(cmap="Blues")
+plt.title("initial boosted confusion matrix")
+plt.show()
+print(accuracy_score(y_test_final, test_pred_classification))
+```
+
+Getting initial accuracy of 65.5% not bad
+
+Tuning
+
+```{python}
+params = {
+    "objective": 'binary:logistic',
+    "eta":0.1,
+    "eval_metric":["auc", "error"],
+    "tree_method":"hist",
+    "seed":42,
+    "nthread":1
+}
+
+tuned_boosted_cv = xgb.cv(
+    params = params, 
+    dtrain = dtrain,
+    num_boost_round = 1000,
+    nfold = 5,
+    verbose_eval = 20,
+    stratified = True,
+    shuffle = True
+)
+```
+
+Pulling out best 
+
+Initially when I went to pull out best iteration it was my last one so I decided to bump up number of itertions to 750 and it was my last one again. I plotted this and the graph still showed some negative slope so number of iterations was bumped again to 1000. When number was increased to 1000, the optimal iterations was an index of 996 so 997 iterations.
+
+Plotting the number of rounds vs error
+
+```{python}
+tuned_boosted_cv_plot = tuned_boosted_cv.reset_index()
+tuned_boosted_cv_plot['num_boosted_rounds'] = tuned_boosted_cv_plot['index']
+tuned_boosted_cv_plot = tuned_boosted_cv_plot.drop( 'index', axis = 1)
+
+error_plot = (ggplot(tuned_boosted_cv_plot,
+                    aes(x = 'num_boosted_rounds',
+                        y = 'test-error-mean'))+ 
+                        geom_line())
+error_plot
+```
+
+
+```{python}
+best_index = tuned_boosted_cv['test-error-mean'].idxmin()
+best_iteration = int(best_index) + 1
+best_error = float(tuned_boosted_cv.loc[best_index, 'test-error-mean'])
+best_auc = float(tuned_boosted_cv.loc[best_index, 'test-auc-mean'])
+```
+
+Best Iteration: 997
+Best Error: 0.2476
+Best AUC: 0.8311
+
+Final Test Error Mean Plot for initial Boost
+
+```{python}
+tuned_boosted_cv_plot['Test error lower'] = tuned_boosted_cv_plot['test-error-mean'] - tuned_boosted_cv_plot['test-error-std']
+tuned_boosted_cv_plot['Test error upper'] = tuned_boosted_cv_plot['test-error-mean'] + tuned_boosted_cv_plot['test-error-std']
+
+error_plot2 = (ggplot(tuned_boosted_cv_plot, 
+                       aes(x = 'num_boosted_rounds',
+                            y = 'test-error-mean'))+
+                        geom_line()+ 
+                        geom_ribbon(aes(ymin = "Test error lower", ymax = "Test error upper"), alpha = .3))
+```
+
+```{python}
+tuned_boosted_cv_plot_long = tuned_boosted_cv_plot.melt(
+    id_vars=["num_boosted_rounds"],
+    value_vars= ["train-error-mean", "test-error-mean"],
+    var_name='variable',
+    value_name='error'
+)
+
+traintesterrorplot = (ggplot(tuned_boosted_cv_plot_long, 
+                            aes(x = 'num_boosted_rounds',
+                                y = 'error', 
+                                color = 'variable'))+
+                                geom_line())
+```
+
+
+
