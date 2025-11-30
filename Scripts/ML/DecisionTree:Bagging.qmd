@@ -277,6 +277,64 @@ imp_top = imp_df.head(top_k).copy()
     )
     + theme_minimal()
 )
-
 ```
 
+Can see that the ten most important features are:
+VIX, RSI, OBV, MACD, Weekly_SD, Volume, Two_Week_SD, Monthly_SD, SD ( of middle bolinger band), Bollinger_Band, Lower
+
+Final_Bagged_Tuning
+
+
+```{python}
+
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import BaggingClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import cross_val_score
+from tqdm import tqdm 
+
+
+param_grid = {
+    "max_samples": [0.5, 0.7, 1.0],
+    "max_features": [0.5, 0.7, 1.0],
+}
+results = []
+total_iterations = len(param_grid['max_samples']) * len(param_grid['max_features'])
+
+# Wrap the outer loop with tqdm and set the total number of iterations
+for n_samp in tqdm(param_grid['max_samples'], desc=f"Total Progress ({total_iterations} fits)"):
+    for n_features in param_grid['max_features']:
+
+        final_adjusted_bag = BaggingClassifier(
+            estimator= DecisionTreeClassifier(random_state=123),
+            n_estimators=best_number_trees, # Assumed to be defined
+            max_samples= n_samp,
+            max_features=n_features,
+            bootstrap=True, 
+            n_jobs=-1,
+            random_state=123
+        )
+        
+
+        cv_score = cross_val_score(
+            final_adjusted_bag, 
+            X_train_final, 
+            y_train_enc, 
+            cv=5, 
+            scoring='accuracy', 
+            n_jobs=-1
+        )
+        
+        results.append({
+                "max_samples": n_samp,
+                "max_features": n_features,
+                "mean_acc": np.mean(cv_score),
+                "std_acc": np.std(cv_score)
+            })
+            
+tune_df = pd.DataFrame(results)
+
+print("\n--- Tuning Results ---")
+print(tune_df)
+```
