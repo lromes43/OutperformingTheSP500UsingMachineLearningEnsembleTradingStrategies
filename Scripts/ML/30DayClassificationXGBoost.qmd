@@ -1,0 +1,242 @@
+---
+title: "Untitled"
+format: html
+---
+
+---
+title: "Untitled"
+format: html
+---
+
+
+```{python}
+import pandas as pd 
+import numpy as np   
+from plotnine import *  
+import xgboost as xgb 
+from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.impute import SimpleImputer
+from sklearn.metrics import (
+    accuracy_score, log_loss, roc_auc_score, confusion_matrix, classification_report, ConfusionMatrixDisplay, f1_score
+)
+from sklearn.model_selection import ParameterGrid
+from tqdm import tqdm 
+import matplotlib.pyplot as plt
+import shap
+from sklearn.metrics import roc_curve, roc_auc_score
+from sklearn.preprocessing import StandardScaler
+```
+
+
+
+```{python}
+train = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TrainData.feather")
+test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather")
+```
+
+Need to make another movement column except for 5 days and 30 days
+
+
+```{python}
+
+five_day_movement_list = []
+
+for t in train['Ticker'].unique():
+    subset = train[train['Ticker'] == t]
+    individual_five_day_movement = []
+
+    for i in range(0, len(subset)):
+        if i == 0:
+            five_day_movement = subset['Movement'].iloc[i]
+        elif i == 1: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-1] > 0:
+                five_day_movement = 1
+            else:
+                five_day_movement = 0
+        elif i == 2: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-2] > 0:
+                five_day_movement =1
+            else: 
+                five_day_movement = 0
+        elif i ==3: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-3] > 0:
+                five_day_movement = 1
+            else: 
+                five_day_movement = 0
+        elif i >= 4:
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-4] > 0:
+                five_day_movement = 1
+            else:
+                five_day_movement = 0
+        individual_five_day_movement.append(five_day_movement)
+    subset['Five_Day_Movement'] = individual_five_day_movement
+    five_day_movement_list.append(subset)
+
+train = pd.concat(five_day_movement_list)
+
+```
+
+
+
+```{python}
+
+thirty_day_movement_list = []
+
+for t in train['Ticker'].unique():
+    subset = train[train['Ticker'] == t]
+    individual_thirty_day_movement = []
+
+    for i in range(0, len(subset)):
+        if i == 0:
+            five_day_movement = subset['Movement'].iloc[i]
+        elif i == 1: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-1] > 0:
+                thirty_day_movement = 1
+            else:
+                thirty_day_movement  = 0
+        elif i == 2: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-2] > 0:
+                thirty_day_movement  =1
+            else: 
+                thirty_day_movement  = 0
+        elif i ==3: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-3] > 0:
+                thirty_day_movement  = 1
+            else: 
+                thirty_day_movement = 0
+        elif i == 4:
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-4] > 0:
+                thirty_day_movement = 1
+            else:
+                thirty_day_movement = 0
+        elif i ==5:
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-5] > 0:
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement = 0
+        elif i ==6: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-6] > 0:
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0
+        elif i == 7: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-7] > 0:
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement = 0
+        elif i ==8: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-8] > 0:
+                thirty_day_movement = 1
+            else: 
+                thirty_day_movement = 0
+        elif i ==9:
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-9] > 0:
+                thirty_day_movement =1 
+            else: 
+                thirty_day_movement = 0
+        elif i ==10:
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-10] > 0:
+                thirty_day_movement =1 
+            else: 
+                thirty_day_movement = 0
+        elif i ==11: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-11] > 0:
+                thirty_day_movement  = 1
+            else: 
+                thirty_day_movement = 0
+        elif i ==12: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-12] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i ==13: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-13] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i ==14: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-14] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i ==15: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-15] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i ==16: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-16] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i ==17: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-17] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i ==18: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-18] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i ==19: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-19] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i ==20: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-20] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i ==21: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-21] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i ==22: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-22] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i ==23: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-23] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i ==24: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-24] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i ==25: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-25] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i ==26: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-26] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i ==27: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-27] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i ==28: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-20] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        elif i >= 29: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-29] > 0: 
+                thirty_day_movement =1
+            else: 
+                thirty_day_movement =0 
+        individual_thirty_day_movement.append(thirty_day_movement)
+    subset['Five_Day_Movement'] = individual_thirty_day_movement
+    thirty_day_movement_list.append(subset)
+
+train = pd.concat(five_day_movement_list)
+```

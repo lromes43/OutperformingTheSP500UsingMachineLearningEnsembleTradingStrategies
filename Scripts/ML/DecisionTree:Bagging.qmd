@@ -302,13 +302,13 @@ param_grid = {
 results = []
 total_iterations = len(param_grid['max_samples']) * len(param_grid['max_features'])
 
-# Wrap the outer loop with tqdm and set the total number of iterations
+
 for n_samp in tqdm(param_grid['max_samples'], desc=f"Total Progress ({total_iterations} fits)"):
     for n_features in param_grid['max_features']:
 
         final_adjusted_bag = BaggingClassifier(
             estimator= DecisionTreeClassifier(random_state=123),
-            n_estimators=best_number_trees, # Assumed to be defined
+            n_estimators=best_number_trees, 
             max_samples= n_samp,
             max_features=n_features,
             bootstrap=True, 
@@ -337,4 +337,79 @@ tune_df = pd.DataFrame(results)
 
 print("\n--- Tuning Results ---")
 print(tune_df)
+```
+
+Visualizing values from above
+
+```{python}
+tune_df = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/Scripts/ML/Bagged_tuned_results.csv")
+tuned_results_plot = (ggplot(tune_df, aes(x = 'max_samples',
+                                      y = 'mean_acc',
+                                     color = 'factor(max_samples)',
+                                     group = 'max_samples'))+
+                                     geom_point()+
+                                     geom_line()+
+                                     facet_wrap('~max_features'))
+tuned_results_plot
+```
+
+Optimal Values
+```{python}
+best_index = tune_df['mean_acc'].idxmax()
+best_row = tune_df.loc[best_index]
+
+best_estimator = best_row['n_samp']
+best_max_samp = best_row['max_samples']
+best_max_features = best_row['max_features']
+best_cv_mean = best_row['mean_acc']
+best_cv_std = best_row['std_acc']
+
+
+print("Best parameters from CV:")
+print(f"  n_estimators : {best_estimator}")
+print(f"  max_samples  : {best_max_samples}")
+print(f"  max_features : {best_max_features}")
+print(f"  CV accuracy  : {best_cv_mean:.4f} ± {best_cv_std:.4f}")
+```
+
+
+Max samples = 1
+max features = .5
+cv acc = .6815 
+n_estimators = 710
+
+```{python}
+best_estimator = 710
+best_max_features = .5
+bext_max_samp = 1
+```
+
+```{python}
+tuned_bag = BaggingClassifier(
+    estimator=DecisionTreeClassifier(random_state=123), 
+    n_estimators=710, 
+    max_samples=1,
+    max_features=0.5, 
+    bootstrap=True,
+    n_jobs=-1, 
+    random_state=123, 
+    oob_score=True,   
+)
+
+tuned_bag.fit(X_train_final, y_train_enc)
+```
+
+
+```{python}
+ypred_enc = FinalTunedBagged.predict(X_test_final)
+ypred = le.inverse_transform(ypred_enc)
+FinalTunedBagged_acc = accuracy_score(y_test, ypred)
+
+
+cm = confusion_matrix(y_test, ypred)
+FinalTunedBagged_cm = ConfusionMatrixDisplay(confusion_matrix=cm,display_labels=le.classes_)
+FinalTunedBagged_cm.plot(cmap="Blues")
+plt.title('FinalTunnedBagged')
+plt.show()
+
 ```

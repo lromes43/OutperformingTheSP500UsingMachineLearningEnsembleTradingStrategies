@@ -21,3 +21,575 @@ import shap
 from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.preprocessing import StandardScaler
 ```
+
+
+
+```{python}
+train = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TrainData.feather")
+test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather")
+```
+
+Need to make another movement column for 5 days for train and test
+
+
+```{python}
+
+five_day_movement_list = []
+
+for t in train['Ticker'].unique():
+    subset = train[train['Ticker'] == t]
+    individual_five_day_movement = []
+
+    for i in range(0, len(subset)):
+        if i == 0:
+            five_day_movement = subset['Movement'].iloc[i]
+        elif i == 1: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-1] > 0:
+                five_day_movement = 1
+            else:
+                five_day_movement = 0
+        elif i == 2: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-2] > 0:
+                five_day_movement =1
+            else: 
+                five_day_movement = 0
+        elif i ==3: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-3] > 0:
+                five_day_movement = 1
+            else: 
+                five_day_movement = 0
+        elif i >= 4:
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-4] > 0:
+                five_day_movement = 1
+            else:
+                five_day_movement = 0
+        individual_five_day_movement.append(five_day_movement)
+    subset['Five_Day_Movement'] = individual_five_day_movement
+    five_day_movement_list.append(subset)
+
+train = pd.concat(five_day_movement_list)
+
+```
+
+```{python}
+five_day_movement_list = []
+
+for t in test['Ticker'].unique():
+    subset = test[test['Ticker'] == t]
+    individual_five_day_movement = []
+
+    for i in range(0, len(subset)):
+        if i == 0:
+            five_day_movement = subset['Movement'].iloc[i]
+        elif i == 1: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-1] > 0:
+                five_day_movement = 1
+            else:
+                five_day_movement = 0
+        elif i == 2: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-2] > 0:
+                five_day_movement =1
+            else: 
+                five_day_movement = 0
+        elif i ==3: 
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-3] > 0:
+                five_day_movement = 1
+            else: 
+                five_day_movement = 0
+        elif i >= 4:
+            if subset['Close'].iloc[i] - subset['Close'].iloc[i-4] > 0:
+                five_day_movement = 1
+            else:
+                five_day_movement = 0
+        individual_five_day_movement.append(five_day_movement)
+    subset['Five_Day_Movement'] = individual_five_day_movement
+    five_day_movement_list.append(subset)
+
+test = pd.concat(five_day_movement_list)
+```
+
+
+
+
+```{python}
+X_train_raw = train.drop(['Date', 'Day_to_Day_Diff', 'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff', 'Two_Week_Percent_Diff', 'Monthly_Percent_Diff', 'Daily_Return', 'Day_Range', 'Movement', 'Five_Day_Movement'], axis = 1)
+
+X_test_raw = test.drop(['Date', 'Day_to_Day_Diff', 'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff', 'Two_Week_Percent_Diff', 'Monthly_Percent_Diff', 'Daily_Return', 'Day_Range', 'Movement', 'Five_Day_Movement'], axis = 1)
+
+X_train_raw = pd.get_dummies(X_train_raw, drop_first=True)
+X_test_raw = pd.get_dummies(X_test_raw, drop_first=True)
+
+
+X_train_final = X_train_raw.apply(pd.to_numeric, errors = 'coerce')
+X_test_final = X_test_raw.apply(pd.to_numeric, errors = 'coerce')
+
+y_train_final = pd.Categorical(train['Five_Day_Movement'])
+y_test_final = pd.Categorical(test['Five_Day_Movement'])
+dtrain = xgb.DMatrix(data = X_train_final, label = y_train_final)
+dtest = xgb.DMatrix(data = X_test_final, label = y_test_final)
+```
+
+Fitting Initial XGBoost
+
+
+```{python}
+params = {
+    "objective":"binary:logistic",
+    "eval_metric": ["auc", "error"],
+    "seed":42
+}
+num_boost_rounds = 300
+
+
+watchlist = [(dtrain, "training")]
+booster = xgb.train(
+    params, 
+    dtrain,
+    num_boost_round = num_boost_rounds,
+    evals = watchlist,
+    verbose_eval = 50
+)
+```
+
+
+Predicting Initial
+
+```{python}
+yhat_enc = booster.predict(dtest)
+yhat_enc
+test_pred_classification = (yhat_enc >= 0.5).astype(int)
+
+
+cm = confusion_matrix(y_test_final, test_pred_classification)
+initial_boosted_cm = ConfusionMatrixDisplay(confusion_matrix=cm)
+initial_boosted_cm.plot(cmap="Blues")
+plt.title("initial boosted confusion matrix")
+plt.show()
+print(accuracy_score(y_test_final, test_pred_classification))
+```
+
+77% not bad!
+
+
+Tuning
+
+```{python}
+params = {
+    "objective": 'binary:logistic',
+    "eta":0.1,
+    "eval_metric":["auc", "error"],
+    "tree_method":"hist",
+    "seed":42,
+    "nthread":1
+}
+
+tuned_boosted_cv = xgb.cv(
+    params = params, 
+    dtrain = dtrain,
+    num_boost_round = 1000,
+    nfold = 5,
+    verbose_eval = 20,
+    stratified = True,
+    shuffle = True
+)
+```
+
+
+
+Like my previous model predicting one day movement, Initially when I went to pull out best iteration it was my last one so I decided to bump up number of itertions to 750 and it was my last one again. I plotted this and the graph still showed some negative slope so number of iterations was bumped again to 1000. When number was increased to 1000, the optimal iterations was an index of 994 so 995 iterations.
+
+```{python}
+tuned_boosted_cv_plot = tuned_boosted_cv.reset_index()
+tuned_boosted_cv_plot['num_boosted_rounds'] = tuned_boosted_cv_plot['index']
+tuned_boosted_cv_plot = tuned_boosted_cv_plot.drop( 'index', axis = 1)
+
+error_plot = (ggplot(tuned_boosted_cv_plot,
+                    aes(x = 'num_boosted_rounds',
+                        y = 'test-error-mean'))+ 
+                        geom_line())
+error_plot
+```
+
+```{python}
+best_index = tuned_boosted_cv['test-error-mean'].idxmin()
+best_iteration = int(best_index) + 1
+best_error = float(tuned_boosted_cv.loc[best_index, 'test-error-mean'])
+best_auc = float(tuned_boosted_cv.loc[best_index, 'test-auc-mean'])
+```
+
+Best Iteration: 995
+Best Error: 0.1533
+Best AUC: 0.9284
+
+```{python}
+tuned_boosted_cv_plot['Test error lower'] = tuned_boosted_cv_plot['test-error-mean'] - tuned_boosted_cv_plot['test-error-std']
+tuned_boosted_cv_plot['Test error upper'] = tuned_boosted_cv_plot['test-error-mean'] + tuned_boosted_cv_plot['test-error-std']
+
+error_plot2 = (ggplot(tuned_boosted_cv_plot, 
+                       aes(x = 'num_boosted_rounds',
+                            y = 'test-error-mean'))+
+                        geom_line()+ 
+                        geom_ribbon(aes(ymin = "Test error lower", ymax = "Test error upper"), alpha = .3))
+```
+
+
+
+```{python}
+tuned_boosted_cv_plot_long = tuned_boosted_cv_plot.melt(
+    id_vars=["num_boosted_rounds"],
+    value_vars= ["train-error-mean", "test-error-mean"],
+    var_name='variable',
+    value_name='error'
+)
+
+traintesterrorplot = (ggplot(tuned_boosted_cv_plot_long, 
+                            aes(x = 'num_boosted_rounds',
+                                y = 'error', 
+                                color = 'variable'))+
+                                geom_line())
+
+traintesterrorplot                    
+```
+
+
+Tuning max depth and child weight
+
+```{python}
+params_new = {
+    "max_depth": [3,7,10],
+    "min_child_weight":[5,7,10]
+}
+
+
+base_params = {
+    "objective": 'binary:logistic',
+    "eta": .1,
+    "eval_metric": ['error', 'auc'],
+    "tree_method": 'hist',
+    "seed":111111,
+    "nthread": 1,
+    "max_depth": [3,5,7,10],
+    "min_child_weight": [5,7,10]
+}
+
+num_boost_rounds = 995
+
+
+```
+
+
+
+```{python}
+
+results = []
+
+for md in params_new["max_depth"]:
+    for mcw in params_new["min_child_weight"]:
+        params = base_params.copy()
+        params["max_depth"] = md
+        params["min_child_weight"] = mcw
+
+        additional_tuning_cv = xgb.cv(
+            params = params,
+            dtrain = dtrain,
+            num_boost_round = num_boost_rounds,
+            nfold = 5, 
+            early_stopping_rounds = 20,
+            stratified = True,
+            shuffle = True,
+            verbose_eval = False, 
+            seed = 42
+        )
+
+        results.append({
+            "max_depth":md,
+            "min_child_weight":mcw,
+            "best_round":len(additional_tuning_cv),
+            "best_error":additional_tuning_cv['test-error-mean'].min(),
+            'best_auc':additional_tuning_cv['test-auc-mean'].max()
+   })
+
+```
+
+
+
+```{python}
+
+cv_results_df = (
+    pd.DataFrame(results)
+      .sort_values(["best_error", "best_auc"], ascending=[True, False])
+      .reset_index(drop=True)
+)
+
+best_pair = cv_results_df.iloc[0].to_dict()
+print("Best (by min test_error, then max AUC):", best_pair)
+
+tuned_depth = int(best_pair['max_depth'])
+tuned_min_child_weight = int(best_pair['min_child_weight'])
+
+```
+
+Right here rn
+
+Tuning Gamma
+
+
+```{python}
+gamma_results = []
+gamma = [0.001, 0.05, 0.1, .15, .2, .3]
+params = {
+    "objective": 'binary:logistic',
+    "eta": .1,
+    "eval_metric": ['error', 'auc'],
+    "tree_method": 'hist',
+    "seed":111111,
+    "nthread": -1,
+    "max_depth":tuned_depth,
+    "min_child_weight": tuned_min_child_weight
+}
+
+for g in gamma:
+    new_params = params.copy()
+    new_params['gamma'] = float(g)
+
+    optimalgammaboost = xgb.cv(
+        params= new_params,
+        dtrain = dtrain,
+        num_boost_round = 997,
+        nfold = 5, 
+        early_stopping_rounds = 20, 
+        stratified = True,
+        shuffle = True, 
+        verbose_eval = False, 
+        seed = 42
+    )
+    best_round = len(optimalgammaboost)
+    best_row = optimalgammaboost.iloc[best_round-1]
+    gamma_results.append({
+        "gamma":g,
+        "best_round":int(best_round),
+        "test_auc": float(best_row['test-auc-mean']),
+        'test_error':float(best_row['test-error-mean'])
+    })
+
+    gamma_df = pd.DataFrame(gamma_results).sort_values(['test_error', 'test_auc'], ascending=[True, False]).reset_index(drop=True)
+    gamma_df
+
+```
+
+
+
+```{python}
+best_gamma = float(gamma_df.iloc[0]['gamma'])
+```
+
+
+
+Best parameters so far:
+
+```{python}
+num_boost_rounds = 995
+best_gamma = .1
+tuned_depth = 10
+tuned_min_child_weight = 10
+
+params = {
+    "objective": 'binary:logistic',
+    "eta": .1,
+    "eval_metric": ['error', 'auc'],
+    "tree_method": 'hist',
+    "seed":111111,
+    "nthread": -1,
+    "max_depth":tuned_depth,
+    "min_child_weight": tuned_min_child_weight,
+    "gamma": best_gamma
+}
+```
+
+Subsample and colsample_bytree tuning
+```{python}
+additional_params = {
+    "subsample":[.4, .5, .6, .7, .8, .9, 1],
+    "colsample_bytree":[.4, .5, .6, .7, .8, .9, 1]
+}
+
+tuned_subsamples_results = []
+
+for ss in additional_params['subsample']:
+    for cst in additional_params['colsample_bytree']:
+        best_params = params.copy()
+        best_params['subsample'] = ss
+        best_params['colsample_bytree'] = cst
+
+        tuned_subsamples = xgb.cv(
+            params = best_params, 
+            dtrain = dtrain, 
+            num_boost_round = num_boost_rounds,
+            nfold = 5,
+            early_stopping_rounds = 20,
+            stratified = True, 
+            shuffle = True, 
+            verbose_eval = False, 
+            seed = 42
+        )
+
+        best_round = len(tuned_subsamples)
+        best_row =  tuned_subsamples.iloc[best_round-1]
+
+
+        tuned_subsamples_results.append({
+            "subsample":ss, 
+            "colsample_bytree": cst,
+            "best_round": int(best_round),
+            "test_auc": float(best_row['test-auc-mean']),
+            'test_error':float(best_row['test-error-mean'])
+        })
+
+        tuned_subsamples_results_df = pd.DataFrame(tuned_subsamples_results)
+
+
+```
+
+```{python}
+tuned_subsamples_results_df = tuned_subsamples_results_df.sort_values(['test_error', 'test_auc'], ascending=[True, False]).reset_index(drop=True)
+
+best = tuned_subsamples_results_df.iloc[0].to_dict()
+tuned_subsample = best['subsample']
+tuned_colsample = best['colsample_bytree']
+```
+
+
+Updated Best Parameters
+```{python}
+num_boost_rounds = 995
+best_gamma = 
+tuned_depth = 
+tuned_min_child_weight = 
+tuned_subsample = 
+tuned_colsample = 
+
+params = {
+    "objective": 'binary:logistic',
+    "eta": .1,
+    "eval_metric": ['error', 'auc'],
+    "tree_method": 'hist',
+    "seed":111111,
+    "nthread": -1,
+    "max_depth":tuned_depth,
+    "min_child_weight": tuned_min_child_weight,
+    "gamma": best_gamma, 
+    "subsample": tuned_subsample,
+    "colsample_bytree":tuned_colsample
+}
+```
+
+
+Finding Best ETA 
+
+
+```{python}
+from tqdm import tqdm
+import numpy as np
+
+etas = np.arange(0.0001, 0.1, 0.005)
+additional_params = {'eta': etas}
+
+optimal_eta_results = []
+
+for e in tqdm(etas, desc="Tuning eta"):
+    params_new = params.copy()
+    params_new['eta'] = e   
+
+    boostedoptimal_eta = xgb.cv(
+        params=params_new, 
+        dtrain=dtrain, 
+        num_boost_round=num_boost_rounds,
+        nfold=5, 
+        early_stopping_rounds=20, 
+        stratified=True, 
+        shuffle=True, 
+        verbose_eval=False, 
+        seed=42,
+    )
+
+    boostedoptimal_eta_results = boostedoptimal_eta.reset_index().rename(columns={'index':'iter'})
+    boostedoptimal_eta_results['iter'] = boostedoptimal_eta_results['iter'] + 1
+
+    best_row = boostedoptimal_eta_results.iloc[-1]
+    best_error = float(best_row['test-error-mean'])
+    best_auc = float(best_row['test-auc-mean'])
+
+    optimal_eta_results.append({
+        "eta": e,
+        "best_round": len(boostedoptimal_eta_results),
+        "best_error": best_error,
+        "best_auc": best_auc
+    })
+
+
+```
+
+
+Converting Results to a df
+```{python}
+optimal_eta_df = pd.DataFrame(optimal_eta_results)
+optimal_eta_df  = optimal_eta_df.sort_values(['best_error', 'best_auc'], ascending=[True, False])
+best_row = optimal_eta_df.iloc[0]
+best_eta = float(best_row['eta'])
+```
+
+Optimal Parameters 
+
+```{python}
+
+num_boost_rounds = 995
+best_gamma = 
+tuned_depth = 
+tuned_min_child_weight = 
+tuned_subsample = 
+tuned_colsample = 
+best_eta = 
+
+final_params = {
+    "objective": 'binary:logistic',
+    "eta": best_eta,
+    "eval_metric": ['error', 'auc'],
+    "tree_method": 'hist',
+    "seed":111111,
+    "nthread": -1,
+    "max_depth":tuned_depth,
+    "min_child_weight": tuned_min_child_weight,
+    "gamma": best_gamma, 
+    "subsample": tuned_subsample,
+    "colsample_bytree":tuned_colsample
+}
+```
+
+
+Fitting Best Boosted
+
+```{python}
+
+watchlist = [(dtrain, "training")]
+five_day_final_boosted=  xgb.train(
+    params = final_params,
+    dtrain = dtrain,
+    num_boost_round = num_boost_rounds,
+    evals = watchlist, 
+    verbose_eval = 50)
+```
+
+Applying to test set 
+
+```{python}
+test_pred_tuned = five_day_final_boosted.predict(dtest)
+test_pred_classification = (test_pred_tuned >=.5).astype(int)
+
+cm = confusion_matrix(y_test_final, test_pred_classification)
+five_day_final_boostedcm = ConfusionMatrixDisplay(confusion_matrix=cm)
+five_day_final_boostedcm.plot(cmap = "Blues")
+plt.title("Final Boosted Confusion Matrix")
+plt.show()
+final_boosted_acc = accuracy_score(y_test_final, test_pred_classification)
+print(final_boosted_acc)
+```
