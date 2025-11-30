@@ -499,5 +499,11 @@ print(final_boosted_acc)
 
 Get 65.9% accuracy in predicting if a stock will go up or down the next day. Great increase over original.
 
+```{python}
+import joblib
+final_model_filename = 'BoostedOneDayClassifier.job.lib'
+joblib.dump(FinalBoosted, final_model_filename)
+```
+
 
 
