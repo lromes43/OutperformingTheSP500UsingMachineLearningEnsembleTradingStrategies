@@ -434,6 +434,7 @@ for e in tqdm(etas, desc="Tuning eta"):
 
 ```
 
+Converting Results to a df
 ```{python}
 optimal_eta_df = pd.DataFrame(optimal_eta_results)
 optimal_eta_df  = optimal_eta_df.sort_values(['best_error', 'best_auc'], ascending=[True, False])
@@ -441,9 +442,10 @@ best_row = optimal_eta_df.iloc[0]
 best_eta = float(best_row['eta'])
 ```
 
-Optimal Parameters
+Optimal Parameters 
 
 ```{python}
+
 num_boost_rounds = 997
 best_gamma = 0.1
 tuned_depth = 7
@@ -452,7 +454,7 @@ tuned_subsample = 1.0
 tuned_colsample = 1.0
 best_eta = .0951
 
-params = {
+final_params = {
     "objective": 'binary:logistic',
     "eta": best_eta,
     "eval_metric": ['error', 'auc'],
@@ -466,3 +468,36 @@ params = {
     "colsample_bytree":tuned_colsample
 }
 ```
+
+Fitting Best Boosted
+
+```{python}
+
+watchlist = [(dtrain, "training")]
+FinalBoosted =  xgb.train(
+    params = final_params,
+    dtrain = dtrain,
+    num_boost_round = num_boost_rounds,
+    evals = watchlist, 
+    verbose_eval = 50)
+```
+
+Applying to test set 
+
+```{python}
+test_pred_tuned = FinalBoosted.predict(dtest)
+test_pred_classification = (test_pred_tuned >=.5).astype(int)
+
+cm = confusion_matrix(y_test_final, test_pred_classification)
+finalboostedcm = ConfusionMatrixDisplay(confusion_matrix=cm)
+finalboostedcm.plot(cmap = "Blues")
+plt.title("Final Boosted Confusion Matrix")
+plt.show()
+final_boosted_acc = accuracy_score(y_test_final, test_pred_classification)
+print(final_boosted_acc)
+```
+
+Get 65.9% accuracy in predicting if a stock will go up or down the next day. Great increase over original.
+
+
+
