@@ -100,7 +100,7 @@ error = []
 for i in range(0, len(merged_MAE_df+1)):
     diff = float(merged_MAE_df['Actual'].iloc[i] - merged_MAE_df['Predicted'].iloc[i])
     error.append(diff)
-    MAE = 1/(len(merged_MAE_df)) * sum(error)
+    MAE = (1/len(merged_MAE_df)) * sum(error)
 
 print(f"MAE: {MAE}")
 
@@ -108,6 +108,15 @@ print(f"MAE: {MAE}")
 
 MSE
 
+1/n * sum(actual - predicted)^2
+
+```{python}
+error = []
+for i in range(0, len(merged_MAE_df+1)):
+    diff = float(merged_MAE_df['Actual'].iloc[i] - merged_MAE_df['Predicted'].iloc[i]) **2
+    error.append(diff)
+    MSE = (1/len(merged_MAE_df)) * sum(error)
+```
 
 
 

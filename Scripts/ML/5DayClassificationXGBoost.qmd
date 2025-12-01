@@ -29,104 +29,34 @@ train = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/Tra
 test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather")
 ```
 
-Need to make another movement column for 5 days for train and test
 
 
 ```{python}
+drop_cols = ['Date', 'Daily_Return',
+ 'next_day_pct_change',
+ 'next_5_day_pct_change',
+ 'Movement_5_day',
+ 'next_30_day_pct_change',
+ 'Movement_30_day',
+ 'Movement']
 
-five_day_movement_list = []
-
-for t in train['Ticker'].unique():
-    subset = train[train['Ticker'] == t]
-    individual_five_day_movement = []
-
-    for i in range(0, len(subset)):
-        if i == 0:
-            five_day_movement = subset['Movement'].iloc[i]
-        elif i == 1: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-1] > 0:
-                five_day_movement = 1
-            else:
-                five_day_movement = 0
-        elif i == 2: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-2] > 0:
-                five_day_movement =1
-            else: 
-                five_day_movement = 0
-        elif i ==3: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-3] > 0:
-                five_day_movement = 1
-            else: 
-                five_day_movement = 0
-        elif i >= 4:
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-4] > 0:
-                five_day_movement = 1
-            else:
-                five_day_movement = 0
-        individual_five_day_movement.append(five_day_movement)
-    subset['Five_Day_Movement'] = individual_five_day_movement
-    five_day_movement_list.append(subset)
-
-train = pd.concat(five_day_movement_list)
-
-```
-
-```{python}
-five_day_movement_list = []
-
-for t in test['Ticker'].unique():
-    subset = test[test['Ticker'] == t]
-    individual_five_day_movement = []
-
-    for i in range(0, len(subset)):
-        if i == 0:
-            five_day_movement = subset['Movement'].iloc[i]
-        elif i == 1: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-1] > 0:
-                five_day_movement = 1
-            else:
-                five_day_movement = 0
-        elif i == 2: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-2] > 0:
-                five_day_movement =1
-            else: 
-                five_day_movement = 0
-        elif i ==3: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-3] > 0:
-                five_day_movement = 1
-            else: 
-                five_day_movement = 0
-        elif i >= 4:
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-4] > 0:
-                five_day_movement = 1
-            else:
-                five_day_movement = 0
-        individual_five_day_movement.append(five_day_movement)
-    subset['Five_Day_Movement'] = individual_five_day_movement
-    five_day_movement_list.append(subset)
-
-test = pd.concat(five_day_movement_list)
-```
-
-
-
-
-```{python}
-X_train_raw = train.drop(['Date', 'Day_to_Day_Diff', 'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff', 'Two_Week_Percent_Diff', 'Monthly_Percent_Diff', 'Daily_Return', 'Day_Range', 'Movement', 'Five_Day_Movement'], axis = 1)
-
-X_test_raw = test.drop(['Date', 'Day_to_Day_Diff', 'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff', 'Two_Week_Percent_Diff', 'Monthly_Percent_Diff', 'Daily_Return', 'Day_Range', 'Movement', 'Five_Day_Movement'], axis = 1)
+X_train_raw = train.drop(drop_cols, axis=1)
+X_test_raw  = test.drop(drop_cols, axis=1)
 
 X_train_raw = pd.get_dummies(X_train_raw, drop_first=True)
-X_test_raw = pd.get_dummies(X_test_raw, drop_first=True)
+X_test_raw  = pd.get_dummies(X_test_raw, drop_first=True)
 
 
-X_train_final = X_train_raw.apply(pd.to_numeric, errors = 'coerce')
-X_test_final = X_test_raw.apply(pd.to_numeric, errors = 'coerce')
+X_train_final, X_test_final = X_train_raw.align(X_test_raw, join='left', axis=1)
+X_test_final = X_test_final.fillna(0)
 
-y_train_final = pd.Categorical(train['Five_Day_Movement'])
-y_test_final = pd.Categorical(test['Five_Day_Movement'])
-dtrain = xgb.DMatrix(data = X_train_final, label = y_train_final)
-dtest = xgb.DMatrix(data = X_test_final, label = y_test_final)
+
+y_train_final = train['Movement_5_day'].astype(int)
+y_test_final  = test['Movement_5_day'].astype(int)
+
+dtrain = xgb.DMatrix(X_train_final, label=y_train_final)
+dtest  = xgb.DMatrix(X_test_final,  label=y_test_final)
+
 ```
 
 Fitting Initial XGBoost
@@ -153,9 +83,8 @@ booster = xgb.train(
 
 
 Predicting Initial
-
 ```{python}
-yhat_enc = booster.predict(dtest)
+hat_enc = booster.predict(dtest)
 yhat_enc
 test_pred_classification = (yhat_enc >= 0.5).astype(int)
 
@@ -168,7 +97,6 @@ plt.show()
 print(accuracy_score(y_test_final, test_pred_classification))
 ```
 
-77% not bad!
 
 
 Tuning
@@ -389,7 +317,7 @@ Best parameters so far:
 
 ```{python}
 num_boost_rounds = 995
-best_gamma = .1
+best_gamma = .05
 tuned_depth = 10
 tuned_min_child_weight = 10
 
@@ -463,11 +391,11 @@ tuned_colsample = best['colsample_bytree']
 Updated Best Parameters
 ```{python}
 num_boost_rounds = 995
-best_gamma = .1
+best_gamma = .05
 tuned_depth = 10
-tuned_min_child_weight = 10
-tuned_subsample = 1
-tuned_colsample = .8
+tuned_min_child_weight = 5
+tuned_subsample = 
+tuned_colsample = 
 
 params = {
     "objective": 'binary:logistic',
@@ -596,7 +524,7 @@ final_boosted_acc = accuracy_score(y_test_final, test_pred_classification)
 print(final_boosted_acc)
 ```
 
-Up to a 78% accuracy for predicting 5 day movement not bad!
+
 
 
 ```{python}
