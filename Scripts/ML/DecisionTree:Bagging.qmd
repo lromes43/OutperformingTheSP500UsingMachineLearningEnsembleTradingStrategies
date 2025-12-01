@@ -31,7 +31,7 @@ test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/Test
 
 
 ```{python}
-cols_to_drop = ['Date', 'Day_to_Day_Diff', 'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff', 'Two_Week_Percent_Diff', 'Monthly_Percent_Diff', 'Daily_Return', 'Day_Range']
+cols_to_drop = ['Date', 'Daily_Return','next_day_pct_change','next_5_day_pct_change','Movement_5_day','next_30_day_pct_change','Movement_30_day','Movement']
 
 
 X_train = train.drop(columns=cols_to_drop + ['Movement'])
@@ -116,7 +116,7 @@ Saving the models
 
 ```{python}
 # Save the Decision Tree model
-filename_tree = 'tree.pkl'
+filename_tree = 'decisiontree.pkl'
 with open(filename_tree, 'wb') as file:
     pickle.dump(tree, file)
 
@@ -184,8 +184,8 @@ oob_plot
 ```
 
 ```{python}
-min_error = 0.311
-best_number_trees = 710
+min_error = 0.310595
+best_number_trees = 510
 
 
 final_bagged = BaggingClassifier(
@@ -207,9 +207,10 @@ optimal_uterations_plot = ConfusionMatrixDisplay(confusion_matrix=cm, display_la
 optimal_uterations_plot.plot(cmap = "Blues")
 plt.title("Confusion Matrix for Optimal Iterations")
 plt.show()
+print(optimal_iterations_acc)
 
 ```
-Getting 53.9% accuracy
+Getting 53.0% accuracy
 
 ```{python}
 bagged_optimal_iterations = final_bagged
@@ -358,15 +359,12 @@ Optimal Values
 best_index = tune_df['mean_acc'].idxmax()
 best_row = tune_df.loc[best_index]
 
-best_estimator = best_row['n_samp']
-best_max_samp = best_row['max_samples']
+best_max_samples = best_row['max_samples']
 best_max_features = best_row['max_features']
 best_cv_mean = best_row['mean_acc']
 best_cv_std = best_row['std_acc']
 
-
 print("Best parameters from CV:")
-print(f"  n_estimators : {best_estimator}")
 print(f"  max_samples  : {best_max_samples}")
 print(f"  max_features : {best_max_features}")
 print(f"  CV accuracy  : {best_cv_mean:.4f} ± {best_cv_std:.4f}")
@@ -376,10 +374,10 @@ print(f"  CV accuracy  : {best_cv_mean:.4f} ± {best_cv_std:.4f}")
 Max samples = 1
 max features = .5
 cv acc = .6815 
-n_estimators = 710
+n_estimators = 510
 
 ```{python}
-best_estimator = 710
+best_estimator = 510
 best_max_features = .5
 bext_max_samp = 1
 ```
@@ -387,7 +385,7 @@ bext_max_samp = 1
 ```{python}
 tuned_bag = BaggingClassifier(
     estimator=DecisionTreeClassifier(random_state=123), 
-    n_estimators=710, 
+    n_estimators=510, 
     max_samples=1,
     max_features=0.5, 
     bootstrap=True,
@@ -415,4 +413,4 @@ print(FinalTunedBagged_acc)
 
 ```
 
-Gives 0.5056389452332657 so actually worse than initial, use the initial or go to XGBoosted.
+Gives 0.4888 accuracy so worse than our final bagged, optimal iterations is the best option
