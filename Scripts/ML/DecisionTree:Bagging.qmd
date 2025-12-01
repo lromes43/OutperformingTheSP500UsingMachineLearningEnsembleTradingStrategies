@@ -414,3 +414,5 @@ plt.show()
 print(FinalTunedBagged_acc)
 
 ```
+
+Gives 0.5056389452332657 so actually worse than initial, use the initial or go to XGBoosted.

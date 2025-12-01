@@ -380,7 +380,7 @@ for g in gamma:
 
 
 ```{python}
-best_gamma = float(gamma_df.iloc[0]['gamma'])
+best_gamma = float(gamma_df.iloc[1]['gamma'])
 ```
 
 
@@ -407,6 +407,7 @@ params = {
 ```
 
 Subsample and colsample_bytree tuning
+
 ```{python}
 additional_params = {
     "subsample":[.4, .5, .6, .7, .8, .9, 1],
@@ -462,11 +463,11 @@ tuned_colsample = best['colsample_bytree']
 Updated Best Parameters
 ```{python}
 num_boost_rounds = 995
-best_gamma = 
-tuned_depth = 
-tuned_min_child_weight = 
-tuned_subsample = 
-tuned_colsample = 
+best_gamma = .1
+tuned_depth = 10
+tuned_min_child_weight = 10
+tuned_subsample = 1
+tuned_colsample = .8
 
 params = {
     "objective": 'binary:logistic',
@@ -485,6 +486,7 @@ params = {
 
 
 Finding Best ETA 
+
 
 
 ```{python}
@@ -543,12 +545,12 @@ Optimal Parameters
 ```{python}
 
 num_boost_rounds = 995
-best_gamma = 
-tuned_depth = 
-tuned_min_child_weight = 
-tuned_subsample = 
-tuned_colsample = 
-best_eta = 
+best_gamma = 0.1
+tuned_depth = 10
+tuned_min_child_weight = 10
+tuned_subsample = 1
+tuned_colsample = .8
+best_eta = 0.0901
 
 final_params = {
     "objective": 'binary:logistic',
@@ -592,4 +594,12 @@ plt.title("Final Boosted Confusion Matrix")
 plt.show()
 final_boosted_acc = accuracy_score(y_test_final, test_pred_classification)
 print(final_boosted_acc)
+```
+
+Up to a 78% accuracy for predicting 5 day movement not bad!
+
+
+```{python}
+final_model_filename = 'BoostedFiveDayClassifier.job.lib'
+joblib.dump(five_day_final_boosted, final_model_filename)
 ```
