@@ -535,6 +535,6 @@ Accuracy goes up 3% to 56.3% after tuning
 
 ```{python}
 import joblib
-final_model_filename = 'BoostedThirtyDayClassifier.job.lib'
+final_model_filename = 'BoostedThirtyDayClassifier.joblib'
 joblib.dump(FinalBoosted, final_model_filename)
 ```
