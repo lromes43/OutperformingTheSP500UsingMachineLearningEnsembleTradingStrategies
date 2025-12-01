@@ -401,7 +401,7 @@ tuned_bag.fit(X_train_final, y_train_enc)
 
 
 ```{python}
-ypred_enc = FinalTunedBagged.predict(X_test_final)
+ypred_enc = tuned_bag.predict(X_test_final)
 ypred = le.inverse_transform(ypred_enc)
 FinalTunedBagged_acc = accuracy_score(y_test, ypred)
 
@@ -411,5 +411,6 @@ FinalTunedBagged_cm = ConfusionMatrixDisplay(confusion_matrix=cm,display_labels=
 FinalTunedBagged_cm.plot(cmap="Blues")
 plt.title('FinalTunnedBagged')
 plt.show()
+print(FinalTunedBagged_acc)
 
 ```
