@@ -33,21 +33,30 @@ test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/Test
 
 
 ```{python}
-X_train_raw = train.drop(['Date', 'Day_to_Day_Diff', 'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff', 'Two_Week_Percent_Diff', 'Monthly_Percent_Diff', 'Daily_Return', 'Day_Range', 'Movement'], axis = 1)
+drop_cols = ['Date', 'Daily_Return',
+ 'next_day_pct_change',
+ 'next_5_day_pct_change',
+ 'Movement_5_day',
+ 'next_30_day_pct_change',
+ 'Movement_30_day',
+ 'Movement']
 
-X_test_raw = test.drop(['Date', 'Day_to_Day_Diff', 'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff', 'Two_Week_Percent_Diff', 'Monthly_Percent_Diff', 'Daily_Return', 'Day_Range', 'Movement'], axis = 1)
+X_train_raw = train.drop(drop_cols, axis=1)
+X_test_raw  = test.drop(drop_cols, axis=1)
 
 X_train_raw = pd.get_dummies(X_train_raw, drop_first=True)
-X_test_raw = pd.get_dummies(X_test_raw, drop_first=True)
+X_test_raw  = pd.get_dummies(X_test_raw, drop_first=True)
 
 
-X_train_final = X_train_raw.apply(pd.to_numeric, errors = 'coerce')
-X_test_final = X_test_raw.apply(pd.to_numeric, errors = 'coerce')
+X_train_final, X_test_final = X_train_raw.align(X_test_raw, join='left', axis=1)
+X_test_final = X_test_final.fillna(0)
 
-y_train_final = pd.Categorical(train['Movement'])
-y_test_final = pd.Categorical(test['Movement'])
-dtrain = xgb.DMatrix(data = X_train_final, label = y_train_final)
-dtest = xgb.DMatrix(data = X_test_final, label = y_test_final)
+
+y_train_final = train['Movement'].astype(int)
+y_test_final  = test['Movement'].astype(int)
+
+dtrain = xgb.DMatrix(X_train_final, label=y_train_final)
+dtest  = xgb.DMatrix(X_test_final,  label=y_test_final)
 
 ```
 
@@ -87,7 +96,7 @@ plt.show()
 print(accuracy_score(y_test_final, test_pred_classification))
 ```
 
-Getting initial accuracy of 65.5% not bad
+Getting initial accuracy of 66.3% not bad
 
 Tuning
 
@@ -295,9 +304,10 @@ Best parameters so far:
 
 ```{python}
 num_boost_rounds = 997
-best_gamma = 0.1
-tuned_depth = 7
+best_gamma = 0.2
+tuned_depth = 10
 tuned_min_child_weight = 10
+
 
 params = {
     "objective": 'binary:logistic',
@@ -368,10 +378,10 @@ tuned_colsample = best['colsample_bytree']
 Updated Best Parameters
 ```{python}
 num_boost_rounds = 997
-best_gamma = 0.1
-tuned_depth = 7
+best_gamma = 0.2
+tuned_depth = 10
 tuned_min_child_weight = 10
-tuned_subsample = 1.0
+tuned_subsample = .4
 tuned_colsample = 1.0
 
 params = {
@@ -447,12 +457,12 @@ Optimal Parameters
 ```{python}
 
 num_boost_rounds = 997
-best_gamma = 0.1
-tuned_depth = 7
+best_gamma = .2
+tuned_depth = 10
 tuned_min_child_weight = 10
-tuned_subsample = 1.0
-tuned_colsample = 1.0
-best_eta = .0951
+tuned_subsample = .4
+tuned_colsample = 1
+best_eta = 
 
 final_params = {
     "objective": 'binary:logistic',

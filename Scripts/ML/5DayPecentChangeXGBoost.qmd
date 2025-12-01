@@ -3,7 +3,6 @@ title: "Untitled"
 format: html
 ---
 
-
 ```{python}
 import pandas as pd 
 import numpy as np   
@@ -29,7 +28,6 @@ train = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/Tra
 test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather")
 ```
 
-Want to predict one day return % so use next_day_pct_change which is the % change day to day
 
 
 
@@ -43,14 +41,14 @@ X_train_raw = pd.get_dummies(X_train_raw, drop_first=True)
 
 X_train_final = X_train_raw.apply(pd.to_numeric, errors='coerce').fillna(0)
 
-y_train_final = train['next_day_pct_change'].astype(float)
+y_train_final = train['next_5_day_pct_change'].astype(float)
 
 dtrain = xgb.DMatrix(X_train_final, label=y_train_final)
 
 
 
 
-test_clean = test.dropna(subset=['next_day_pct_change']).copy()
+test_clean = test.dropna(subset=['next_5_day_pct_change']).copy()
 
 X_test_raw = test_clean.drop([
     'Daily_Return','next_day_pct_change','next_5_day_pct_change',
@@ -62,13 +60,13 @@ X_test_raw = X_test_raw.reindex(columns=X_train_raw.columns, fill_value=0)
 
 X_test_final = X_test_raw.apply(pd.to_numeric, errors='coerce').fillna(0)
 
-y_test_final = test_clean['next_day_pct_change'].astype(float)
+y_test_final = test_clean['next_5_day_pct_change'].astype(float)
 
 dtest = xgb.DMatrix(X_test_final, label=y_test_final)
 
 ```
 
-
+5 Day Prediction
 
 ```{python}
 params = {
@@ -82,10 +80,8 @@ y_pred = model.predict(dtest)
 
 ```
 
+Merging Data
 
-Mean Absolute Error: MAE
-
-1/n(sum(actual-predicted))
 
 ```{python}
 y_test_new = y_test_final.reset_index()
@@ -96,16 +92,6 @@ merged_MAE_df.columns = ['Actual', 'Predicted']
 merged_MAE_df['diff'] = merged_MAE_df['Actual'] - merged_MAE_df['Predicted']
 ```
 
-```{python}
-error = []
-for i in range(0, len(merged_MAE_df+1)):
-    diff = float(merged_MAE_df['Actual'].iloc[i] - merged_MAE_df['Predicted'].iloc[i])
-    error.append(diff)
-    MAE = (1/len(merged_MAE_df)) * sum(error)
-
-print(f"MAE: {MAE}")
-
-```
 
 MSE
 
@@ -129,7 +115,7 @@ R^2 =  1 - SSR/SST
 SSR = 
 
 ```{python}
-r_squared = r2_score(merged_MAE_df['Actual'], merged_MAE_df['Predicted'])
+r_squared_5_Day = r2_score(merged_MAE_df['Actual'], merged_MAE_df['Predicted'])
 ```
 
 Getting -.767%
