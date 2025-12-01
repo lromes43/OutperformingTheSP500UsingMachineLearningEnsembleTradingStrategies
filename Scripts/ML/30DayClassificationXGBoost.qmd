@@ -260,45 +260,58 @@ Tuning Gamma
 
 
 ```{python}
+from tqdm import tqdm
+
 gamma_results = []
 gamma = [0.001, 0.05, 0.1, .15, .2, .3]
+
 params = {
     "objective": 'binary:logistic',
     "eta": .1,
     "eval_metric": ['error', 'auc'],
     "tree_method": 'hist',
-    "seed":111111,
+    "seed": 111111,
     "nthread": -1,
-    "max_depth":tuned_depth,
+    "max_depth": tuned_depth,
     "min_child_weight": tuned_min_child_weight
 }
 
-for g in gamma:
+
+for g in tqdm(gamma, desc="Tuning gamma"):
     new_params = params.copy()
     new_params['gamma'] = float(g)
 
     optimalgammaboost = xgb.cv(
-        params= new_params,
-        dtrain = dtrain,
-        num_boost_round = 997,
-        nfold = 5, 
-        early_stopping_rounds = 20, 
-        stratified = True,
-        shuffle = True, 
-        verbose_eval = False, 
-        seed = 42
+        params=new_params,
+        dtrain=dtrain,
+        num_boost_round=997,
+        nfold=5,
+        early_stopping_rounds=20,
+        stratified=True,
+        shuffle=True,
+        verbose_eval=False,
+        seed=42
     )
+
     best_round = len(optimalgammaboost)
-    best_row = optimalgammaboost.iloc[best_round-1]
+    best_row = optimalgammaboost.iloc[best_round - 1]
+
     gamma_results.append({
-        "gamma":g,
-        "best_round":int(best_round),
+        "gamma": g,
+        "best_round": int(best_round),
         "test_auc": float(best_row['test-auc-mean']),
-        'test_error':float(best_row['test-error-mean'])
+        "test_error": float(best_row['test-error-mean'])
     })
 
-    gamma_df = pd.DataFrame(gamma_results).sort_values(['test_error', 'test_auc'], ascending=[True, False]).reset_index(drop=True)
-    gamma_df
+
+gamma_df = (
+    pd.DataFrame(gamma_results)
+    .sort_values(['test_error', 'test_auc'], ascending=[True, False])
+    .reset_index(drop=True)
+)
+
+gamma_df
+
 
 ```
 
@@ -308,7 +321,7 @@ best_gamma = float(gamma_df.iloc[0]['gamma'])
 
 ```{python}
 num_boost_rounds = num_boost_rounds
-best_gamma = .05
+best_gamma = .1
 tuned_depth = 10
 tuned_min_child_weight = 5
 
@@ -327,6 +340,8 @@ params = {
 
 Subsample and colsample_bytree tuning
 ```{python}
+from tqdm import tqdm
+
 additional_params = {
     "subsample":[.4, .5, .6, .7, .8, .9, 1],
     "colsample_bytree":[.4, .5, .6, .7, .8, .9, 1]
@@ -334,38 +349,43 @@ additional_params = {
 
 tuned_subsamples_results = []
 
-for ss in additional_params['subsample']:
-    for cst in additional_params['colsample_bytree']:
+subsamples = additional_params["subsample"]
+colsamples = additional_params["colsample_bytree"]
+
+for ss in tqdm(subsamples, desc="Tuning subsample"):
+    for cst in tqdm(colsamples, desc=f"colsample_bytree for subsample={ss}", leave=False):
+
         best_params = params.copy()
         best_params['subsample'] = ss
         best_params['colsample_bytree'] = cst
 
         tuned_subsamples = xgb.cv(
-            params = best_params, 
-            dtrain = dtrain, 
-            num_boost_round = num_boost_rounds,
-            nfold = 5,
-            early_stopping_rounds = 20,
-            stratified = True, 
-            shuffle = True, 
-            verbose_eval = False, 
-            seed = 42
+            params=best_params, 
+            dtrain=dtrain, 
+            num_boost_round=num_boost_rounds,
+            nfold=5,
+            early_stopping_rounds=20,
+            stratified=True,
+            shuffle=True,
+            verbose_eval=False,
+            seed=42
         )
 
         best_round = len(tuned_subsamples)
-        best_row =  tuned_subsamples.iloc[best_round-1]
-
+        best_row = tuned_subsamples.iloc[best_round - 1]
 
         tuned_subsamples_results.append({
-            "subsample":ss, 
+            "subsample": ss,
             "colsample_bytree": cst,
             "best_round": int(best_round),
             "test_auc": float(best_row['test-auc-mean']),
-            'test_error':float(best_row['test-error-mean'])
+            "test_error": float(best_row['test-error-mean'])
         })
 
-        tuned_subsamples_results_df = pd.DataFrame(tuned_subsamples_results)
+tuned_subsamples_results_df = pd.DataFrame(tuned_subsamples_results)
+tuned_subsamples_results_df
 
+     
 
 ```
 
@@ -384,8 +404,8 @@ num_boost_rounds = 997
 best_gamma = 0.1
 tuned_depth = 7
 tuned_min_child_weight = 10
-tuned_subsample = 1.0
-tuned_colsample = 1.0
+tuned_subsample = .8
+tuned_colsample = .5
 
 params = {
     "objective": 'binary:logistic',
@@ -460,13 +480,13 @@ Optimal Parameters
 
 ```{python}
 
-num_boost_rounds = 
-best_gamma = 
-tuned_depth = 
-tuned_min_child_weight = 
-tuned_subsample = 
-tuned_colsample = 
-best_eta = .
+num_boost_rounds = 997 
+best_gamma = .1
+tuned_depth = 7
+tuned_min_child_weight = 10
+tuned_subsample = .8
+tuned_colsample = .5
+best_eta = 0.0951
 
 final_params = {
     "objective": 'binary:logistic',
@@ -511,10 +531,10 @@ final_boosted_acc = accuracy_score(y_test_final, test_pred_classification)
 print(final_boosted_acc)
 ```
 
-Get 65.9% accuracy in predicting if a stock will go up or down the next day. Great increase over original.
+Accuracy goes up 3% to 56.3% after tuning
 
 ```{python}
 import joblib
-final_model_filename = 'BoostedOneDayClassifier.job.lib'
+final_model_filename = 'BoostedThirtyDayClassifier.job.lib'
 joblib.dump(FinalBoosted, final_model_filename)
 ```
