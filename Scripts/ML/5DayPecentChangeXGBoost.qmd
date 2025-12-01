@@ -123,6 +123,14 @@ for i in range(0, len(merged_MAE_df_five +1)):
 
 MSE for five day change: 0.002617
 
+RMSE
+
+sqrt(mse)
+
+```{python}
+five_day_rmse = mse**.5
+```
+
 
 R-Squared
 

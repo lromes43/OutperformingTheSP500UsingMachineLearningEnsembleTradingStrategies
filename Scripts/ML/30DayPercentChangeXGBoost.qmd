@@ -113,6 +113,14 @@ MAE for 30 Day change: .105587
 
 MSE
 
+RMSE
+
+sqrt(mse)
+
+```{python}
+thirty_day_rmse = mse ** .5
+```
+
 1/n * sum(actual - predicted)^2
 
 ```{python}
