@@ -92,7 +92,7 @@ test_pred_classification = (yhat_enc >= 0.5).astype(int)
 cm = confusion_matrix(y_test_final, test_pred_classification)
 initial_boosted_cm = ConfusionMatrixDisplay(confusion_matrix=cm)
 initial_boosted_cm.plot(cmap="Blues")
-plt.title("initial boosted confusion matrix")
+plt.title("Initial 5 Day Boosted Confusion Matrix")
 plt.show()
 print(accuracy_score(y_test_final, test_pred_classification))
 ```
@@ -478,7 +478,7 @@ tuned_depth = 10
 tuned_min_child_weight = 10
 tuned_subsample = 1
 tuned_colsample = .8
-best_eta = 0.0901
+best_eta = 0.0851
 
 final_params = {
     "objective": 'binary:logistic',
@@ -518,16 +518,17 @@ test_pred_classification = (test_pred_tuned >=.5).astype(int)
 cm = confusion_matrix(y_test_final, test_pred_classification)
 five_day_final_boostedcm = ConfusionMatrixDisplay(confusion_matrix=cm)
 five_day_final_boostedcm.plot(cmap = "Blues")
-plt.title("Final Boosted Confusion Matrix")
+plt.title("Final 5 Day Binary Boosted Confusion Matrix")
 plt.show()
 final_boosted_acc = accuracy_score(y_test_final, test_pred_classification)
 print(final_boosted_acc)
 ```
 
+Getting 69.73% for 5 day Prediction.
 
 
 
 ```{python}
-final_model_filename = 'BoostedFiveDayClassifier.job.lib'
+final_model_filename = 'FinalBoostedFiveDayClassifier.job.lib'
 joblib.dump(five_day_final_boosted, final_model_filename)
 ```

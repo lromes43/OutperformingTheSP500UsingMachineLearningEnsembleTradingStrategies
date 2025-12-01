@@ -98,6 +98,15 @@ print(accuracy_score(y_test_final, test_pred_classification))
 
 Getting initial accuracy of 66.3% not bad
 
+
+Expoerting Initial XGBoost Model
+
+```{python}
+import joblib
+final_model_filename = 'InitialBoostedOneDayClassifier.joblib'
+joblib.dump(booster, final_model_filename)
+```
+
 Tuning
 
 ```{python}
@@ -462,7 +471,7 @@ tuned_depth = 10
 tuned_min_child_weight = 10
 tuned_subsample = .4
 tuned_colsample = 1
-best_eta = 
+best_eta = .0951
 
 final_params = {
     "objective": 'binary:logistic',
@@ -507,11 +516,11 @@ final_boosted_acc = accuracy_score(y_test_final, test_pred_classification)
 print(final_boosted_acc)
 ```
 
-Get 65.9% accuracy in predicting if a stock will go up or down the next day. Great increase over original.
+Getting an .
 
 ```{python}
 import joblib
-final_model_filename = 'BoostedOneDayClassifier.job.lib'
+final_model_filename = 'FinalBoostedOneDayClassifier.job.lib'
 joblib.dump(FinalBoosted, final_model_filename)
 ```
 
