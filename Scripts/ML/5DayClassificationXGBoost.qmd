@@ -394,8 +394,8 @@ num_boost_rounds = 995
 best_gamma = .05
 tuned_depth = 10
 tuned_min_child_weight = 5
-tuned_subsample = 
-tuned_colsample = 
+tuned_subsample = .4
+tuned_colsample = .8
 
 params = {
     "objective": 'binary:logistic',
