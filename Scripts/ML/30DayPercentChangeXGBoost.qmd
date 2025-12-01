@@ -98,6 +98,19 @@ merged_MAE_df_thirty = merged_MAE_df
 
 Initial Model Acc Calc
 
+MAE
+```{python}
+error = []
+for i in range(0, len(merged_MAE_df_thirty+1)):
+    diff = float(merged_MAE_df_five ['Actual'].iloc[i] - merged_MAE_df_thirty['Predicted'].iloc[i])
+    error.append(diff)
+    MAE = (1/len(merged_MAE_df_thirty )) * sum(abs(merged_MAE_df_thirty ['Actual'] - merged_MAE_df_thirty ['Predicted']))
+
+print(f"MAE for 30 Day Change: {MAE}")
+```
+
+MAE for 30 Day change: .105587
+
 MSE
 
 1/n * sum(actual - predicted)^2
@@ -110,20 +123,19 @@ for i in range(0, len(merged_MAE_df_thirty+1)):
     MSE_30 = (1/len(merged_MAE_df_thirty)) * sum(error)
 ```
 
+MSE for 30 Days: 0.028185
 
 
 R-Squared
 
 R^2 =  1 - SSR/SST
-
-
-SSR = 
+ 
 
 ```{python}
 r_squared_30_Day = r2_score(merged_MAE_df_thirty['Actual'], merged_MAE_df_thirty['Predicted'])
 ```
 
-Getting -.8177
+R-Squared for next 30 days: -0.8177
 
 
 ```{python}
@@ -132,3 +144,5 @@ close_accuracy = np.mean(np.abs(y_pred_thirty - y_test_final) <= threshold)
 print("Within ±0.5% accuracy:", close_accuracy)
 
 ```
+
+I can the stock price to the nearest .5% with 7.96% accuracy.

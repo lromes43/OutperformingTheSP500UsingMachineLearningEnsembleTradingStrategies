@@ -98,6 +98,8 @@ merged_MAE_df['diff'] = merged_MAE_df['Actual'] - merged_MAE_df['Predicted']
 merged_MAE_df_one = merged_MAE_df
 ```
 
+MAE
+
 ```{python}
 error = []
 for i in range(0, len(merged_MAE_df_one+1)):
@@ -108,6 +110,8 @@ for i in range(0, len(merged_MAE_df_one+1)):
 print(f"MAE for 1 Day Change: {MAE}")
 
 ```
+
+MAE for one day change: 0.0195218
 
 MSE
 
@@ -121,25 +125,23 @@ for i in range(0, len(merged_MAE_df+1)):
     MSE = (1/len(merged_MAE_df_one)) * sum(error)
 ```
 
-
+MSE for one day change: 0.007533
 
 R-Squared
 
-R^2 =  1 - SSR/SST
-
-
-SSR = 
 
 ```{python}
 r_squared_one_day_change = r2_score(merged_MAE_df_one['Actual'], merged_MAE_df_one['Predicted'])
 ```
 
-Getting -.8177%
+R-Squared for One-Day: -76.6996%
 
 
 ```{python}
 threshold = 0.005
-close_accuracy = np.mean(np.abs(y_pred - y_test_final) <= threshold)
+close_accuracy = np.mean(np.abs(y_pred_one - y_test_final) <= threshold)
 print("Within ±0.5% accuracy:", close_accuracy)
 
 ```
+
+Can Predict the movement to the nearest .5% with 27.5% accuracy.

@@ -96,6 +96,7 @@ merged_MAE_df_five = merged_MAE_df
 
 Initial Model Accuracy Calc
 
+MAE
 ```{python}
 error = []
 for i in range(0, len(merged_MAE_df+1)):
@@ -106,6 +107,7 @@ for i in range(0, len(merged_MAE_df+1)):
 print(f"MAE for 5 Day Change: {MAE}")
 ```
 
+MAE for five day change: 0.0362487
 
 MSE
 
@@ -119,25 +121,25 @@ for i in range(0, len(merged_MAE_df_five +1)):
     MSE = (1/len(merged_MAE_df_five )) * sum(error)
 ```
 
+MSE for five day change: 0.002617
 
 
 R-Squared
 
 R^2 =  1 - SSR/SST
 
-
-
-
 ```{python}
 r_squared_5_Day = r2_score(merged_MAE_df_five ['Actual'],merged_MAE_df_five ['Predicted'])
 ```
 
-Getting -.817
+R-Squared for 5 day: -0.31898
 
 
 ```{python}
 threshold = 0.005
-close_accuracy = np.mean(np.abs(y_pred - y_test_final) <= threshold)
+close_accuracy = np.mean(np.abs(y_pred_five - y_test_final) <= threshold)
 print("Within ±0.5% accuracy:", close_accuracy)
 
 ```
+
+To the nearest .5% change in price I have 11.6655% accuracy.
