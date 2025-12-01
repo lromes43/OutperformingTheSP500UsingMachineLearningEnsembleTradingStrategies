@@ -403,56 +403,9 @@ data = pd.concat(OBV, ignore_index=True)
 
 
 
-```{python}
-Day_to_Day_Diff = []
-
-for ticker in data['Ticker'].unique():
-    subset = data[data['Ticker'] == ticker].copy()
-    individual_d2d_diff = []
-    print(ticker)
-    for i in range(0,len(subset)):
-        print(i)
-        if i == 0:
-            price_current = 0
-            price_previous = 0
-        else:
-            price_current = subset['Close'].iloc[i]
-            price_previous = subset['Close'].iloc[i-1]
-        D2D_Diff_vals = price_current - price_previous
-        individual_d2d_diff.append(D2D_Diff_vals)
-    subset['Day_to_Day_Diff'] = individual_d2d_diff
-    Day_to_Day_Diff.append(subset)
-data = pd.concat(Day_to_Day_Diff, ignore_index=True)
-```
 
 
 
-
-```{python}
-Day_to_Day_Percent_Diff = []
-
-for ticker in data['Ticker'].unique():
-    subset = data[data['Ticker'] == ticker].copy()
-    individual_percent_diff = []
-    for i in range(0, len(subset)):
-        if i == 0:
-            price_current = 0
-            price_previous = 1000000000
-        else: 
-            price_current = subset['Close'].iloc[i]
-            price_previous = subset['Close'].iloc[i-1]
-        Percent_diff_values = ((price_current - price_previous) / price_previous) * 100
-        individual_percent_diff.append(Percent_diff_values)
-    subset['Day_to_Day_Percent_Diff'] = individual_percent_diff
-    Day_to_Day_Percent_Diff.append(subset)
-
-data = pd.concat(Day_to_Day_Percent_Diff, ignore_index=True)
-
-```
-
-```{python}
-data.to_csv("FinalSP500DataWithDerived.csv", index=False)
-```
 
 
 
@@ -1157,4 +1110,64 @@ data.to_feather("FINALDATANov26.feather")
 ```{python}
 final = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FINALDATANov26.feather")
 final
+```
+
+Want to add another column that is the next day's value
+
+
+```{python}
+import pandas as pd
+data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FINALDATANov26.feather")
+
+
+Day_to_Day_Diff = []
+
+for ticker in data['Ticker'].unique():
+    subset = data[data['Ticker'] == ticker].copy()
+    subset = subset.sort_values('Date')
+
+    individual_d2d_diff = []
+
+    for i in range(0, len(subset)):
+        if i == len(subset)-1:
+            diff_val = None     # last day has no next-day label
+        else:
+            price_today = subset['Close'].iloc[i]
+            price_tom = subset['Close'].iloc[i+1]
+            diff_val = (price_tom - price_today) / price_today  # percent change
+        individual_d2d_diff.append(diff_val)
+
+    subset['next_day_pct_change'] = individual_d2d_diff
+    Day_to_Day_Diff.append(subset)
+
+data = pd.concat(Day_to_Day_Diff, ignore_index=True)
+
+```
+
+
+```{python}
+data['Movement'] = (data['next_day_pct_change'] > 0).astype(int)
+
+data = data.sort_values(['Ticker', 'Date'])
+
+data['next_5_day_pct_change'] = (
+    data.groupby('Ticker')['Close'].shift(-5) - data['Close']
+) / data['Close']
+
+data['Movement_5_day'] = (data['next_5_day_pct_change'] > 0).astype(int)
+data = data.sort_values(['Ticker', 'Date'])
+
+data['next_30_day_pct_change'] = (
+    data.groupby('Ticker')['Close'].shift(-30) - data['Close']
+) / data['Close']
+
+data['Movement_30_day'] = (data['next_30_day_pct_change'] > 0).astype(int)
+```
+
+
+```{python}
+data.columns.to_list()
+
+
+data.to_feather('CORRECTEDFINALDATA.feather')
 ```
