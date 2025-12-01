@@ -36,43 +36,192 @@ test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/Test
 
 Need to make another movement column except for 5 days and 30 days
 
+)
+
+
+```{python}
+X_train_raw = train.drop(['Date', 'Day_to_Day_Diff', 'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff', 'Two_Week_Percent_Diff', 'Monthly_Percent_Diff', 'Daily_Return', 'Day_Range', 'Movement', 'Five_Day_Movement'], axis = 1)
+
+X_test_raw = test.drop(['Date', 'Day_to_Day_Diff', 'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff', 'Two_Week_Percent_Diff', 'Monthly_Percent_Diff', 'Daily_Return', 'Day_Range', 'Movement', 'Five_Day_Movement'], axis = 1)
+
+X_train_raw = pd.get_dummies(X_train_raw, drop_first=True)
+X_test_raw = pd.get_dummies(X_test_raw, drop_first=True)
+
+
+X_train_final = X_train_raw.apply(pd.to_numeric, errors = 'coerce')
+X_test_final = X_test_raw.apply(pd.to_numeric, errors = 'coerce')
+
+y_train_final = pd.Categorical(train['Five_Day_Movement'])
+y_test_final = pd.Categorical(test['Five_Day_Movement'])
+dtrain = xgb.DMatrix(data = X_train_final, label = y_train_final)
+dtest = xgb.DMatrix(data = X_test_final, label = y_test_final)
+```
+
+
+Fitting Initial XGBoost
+
+
+```{python}
+params = {
+    "objective":"binary:logistic",
+    "eval_metric": ["auc", "error"],
+    "seed":42
+}
+num_boost_rounds = 300
+
+
+watchlist = [(dtrain, "training")]
+booster = xgb.train(
+    params, 
+    dtrain,
+    num_boost_round = num_boost_rounds,
+    evals = watchlist,
+    verbose_eval = 50
+)
+```
+
+
+```{python}
+yhat_enc = booster.predict(dtest)
+yhat_enc
+test_pred_classification = (yhat_enc >= 0.5).astype(int)
+
+
+cm = confusion_matrix(y_test_final, test_pred_classification)
+initial_boosted_cm = ConfusionMatrixDisplay(confusion_matrix=cm)
+initial_boosted_cm.plot(cmap="Blues")
+plt.title("initial boosted confusion matrix")
+plt.show()
+print(accuracy_score(y_test_final, test_pred_classification))
+```
+
+```{python}
+params = {
+    "objective": 'binary:logistic',
+    "eta":0.1,
+    "eval_metric":["auc", "error"],
+    "tree_method":"hist",
+    "seed":42,
+    "nthread":1
+}
+
+tuned_boosted_cv = xgb.cv(
+    params = params, 
+    dtrain = dtrain,
+    num_boost_round = 1000,
+    nfold = 5,
+    verbose_eval = 20,
+    stratified = True,
+    shuffle = True
+)
+```
+
+
+
+```{python}
+tuned_boosted_cv_plot = tuned_boosted_cv.reset_index()
+tuned_boosted_cv_plot['num_boosted_rounds'] = tuned_boosted_cv_plot['index']
+tuned_boosted_cv_plot = tuned_boosted_cv_plot.drop( 'index', axis = 1)
+
+error_plot = (ggplot(tuned_boosted_cv_plot,
+                    aes(x = 'num_boosted_rounds',
+                        y = 'test-error-mean'))+ 
+                        geom_line())
+error_plot
+```
+
+
+```{python}
+best_index = tuned_boosted_cv['test-error-mean'].idxmin()
+best_iteration = int(best_index) + 1
+best_error = float(tuned_boosted_cv.loc[best_index, 'test-error-mean'])
+best_auc = float(tuned_boosted_cv.loc[best_index, 'test-auc-mean'])
+```
+
+
+```{python}
+tuned_boosted_cv_plot['Test error lower'] = tuned_boosted_cv_plot['test-error-mean'] - tuned_boosted_cv_plot['test-error-std']
+tuned_boosted_cv_plot['Test error upper'] = tuned_boosted_cv_plot['test-error-mean'] + tuned_boosted_cv_plot['test-error-std']
+
+error_plot2 = (ggplot(tuned_boosted_cv_plot, 
+                       aes(x = 'num_boosted_rounds',
+                            y = 'test-error-mean'))+
+                        geom_line()+ 
+                        geom_ribbon(aes(ymin = "Test error lower", ymax = "Test error upper"), alpha = .3))
+```
+
+```{python}
+tuned_boosted_cv_plot_long = tuned_boosted_cv_plot.melt(
+    id_vars=["num_boosted_rounds"],
+    value_vars= ["train-error-mean", "test-error-mean"],
+    var_name='variable',
+    value_name='error'
+)
+
+traintesterrorplot = (ggplot(tuned_boosted_cv_plot_long, 
+                            aes(x = 'num_boosted_rounds',
+                                y = 'error', 
+                                color = 'variable'))+
+                                geom_line())
+
+traintesterrorplot                    
+```
+
+Tuning max depth and child weight
+
+```{python}
+params_new = {
+    "max_depth": [3,7,10],
+    "min_child_weight":[5,7,10]
+}
+
+
+base_params = {
+    "objective": 'binary:logistic',
+    "eta": .1,
+    "eval_metric": ['error', 'auc'],
+    "tree_method": 'hist',
+    "seed":111111,
+    "nthread": 1,
+    "max_depth": [3,5,7,10],
+    "min_child_weight": [5,7,10]
+}
+
+num_boost_rounds = 995
+
+
+```
+
 
 ```{python}
 
-five_day_movement_list = []
+results = []
 
-for t in train['Ticker'].unique():
-    subset = train[train['Ticker'] == t]
-    individual_five_day_movement = []
+for md in params_new["max_depth"]:
+    for mcw in params_new["min_child_weight"]:
+        params = base_params.copy()
+        params["max_depth"] = md
+        params["min_child_weight"] = mcw
 
-    for i in range(0, len(subset)):
-        if i == 0:
-            five_day_movement = subset['Movement'].iloc[i]
-        elif i == 1: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-1] > 0:
-                five_day_movement = 1
-            else:
-                five_day_movement = 0
-        elif i == 2: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-2] > 0:
-                five_day_movement =1
-            else: 
-                five_day_movement = 0
-        elif i ==3: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-3] > 0:
-                five_day_movement = 1
-            else: 
-                five_day_movement = 0
-        elif i >= 4:
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-4] > 0:
-                five_day_movement = 1
-            else:
-                five_day_movement = 0
-        individual_five_day_movement.append(five_day_movement)
-    subset['Five_Day_Movement'] = individual_five_day_movement
-    five_day_movement_list.append(subset)
+        additional_tuning_cv = xgb.cv(
+            params = params,
+            dtrain = dtrain,
+            num_boost_round = num_boost_rounds,
+            nfold = 5, 
+            early_stopping_rounds = 20,
+            stratified = True,
+            shuffle = True,
+            verbose_eval = False, 
+            seed = 42
+        )
 
-train = pd.concat(five_day_movement_list)
+        results.append({
+            "max_depth":md,
+            "min_child_weight":mcw,
+            "best_round":len(additional_tuning_cv),
+            "best_error":additional_tuning_cv['test-error-mean'].min(),
+            'best_auc':additional_tuning_cv['test-auc-mean'].max()
+   })
 
 ```
 
@@ -80,163 +229,128 @@ train = pd.concat(five_day_movement_list)
 
 ```{python}
 
-thirty_day_movement_list = []
+cv_results_df = (
+    pd.DataFrame(results)
+      .sort_values(["best_error", "best_auc"], ascending=[True, False])
+      .reset_index(drop=True)
+)
 
-for t in train['Ticker'].unique():
-    subset = train[train['Ticker'] == t]
-    individual_thirty_day_movement = []
+best_pair = cv_results_df.iloc[0].to_dict()
+print("Best (by min test_error, then max AUC):", best_pair)
 
-    for i in range(0, len(subset)):
-        if i == 0:
-            five_day_movement = subset['Movement'].iloc[i]
-        elif i == 1: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-1] > 0:
-                thirty_day_movement = 1
-            else:
-                thirty_day_movement  = 0
-        elif i == 2: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-2] > 0:
-                thirty_day_movement  =1
-            else: 
-                thirty_day_movement  = 0
-        elif i ==3: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-3] > 0:
-                thirty_day_movement  = 1
-            else: 
-                thirty_day_movement = 0
-        elif i == 4:
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-4] > 0:
-                thirty_day_movement = 1
-            else:
-                thirty_day_movement = 0
-        elif i ==5:
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-5] > 0:
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement = 0
-        elif i ==6: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-6] > 0:
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0
-        elif i == 7: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-7] > 0:
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement = 0
-        elif i ==8: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-8] > 0:
-                thirty_day_movement = 1
-            else: 
-                thirty_day_movement = 0
-        elif i ==9:
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-9] > 0:
-                thirty_day_movement =1 
-            else: 
-                thirty_day_movement = 0
-        elif i ==10:
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-10] > 0:
-                thirty_day_movement =1 
-            else: 
-                thirty_day_movement = 0
-        elif i ==11: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-11] > 0:
-                thirty_day_movement  = 1
-            else: 
-                thirty_day_movement = 0
-        elif i ==12: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-12] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i ==13: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-13] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i ==14: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-14] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i ==15: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-15] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i ==16: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-16] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i ==17: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-17] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i ==18: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-18] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i ==19: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-19] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i ==20: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-20] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i ==21: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-21] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i ==22: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-22] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i ==23: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-23] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i ==24: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-24] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i ==25: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-25] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i ==26: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-26] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i ==27: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-27] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i ==28: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-20] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        elif i >= 29: 
-            if subset['Close'].iloc[i] - subset['Close'].iloc[i-29] > 0: 
-                thirty_day_movement =1
-            else: 
-                thirty_day_movement =0 
-        individual_thirty_day_movement.append(thirty_day_movement)
-    subset['Five_Day_Movement'] = individual_thirty_day_movement
-    thirty_day_movement_list.append(subset)
+tuned_depth = int(best_pair['max_depth'])
+tuned_min_child_weight = int(best_pair['min_child_weight'])
 
-train = pd.concat(five_day_movement_list)
+```
+
+Right here rn
+
+Tuning Gamma
+
+
+```{python}
+gamma_results = []
+gamma = [0.001, 0.05, 0.1, .15, .2, .3]
+params = {
+    "objective": 'binary:logistic',
+    "eta": .1,
+    "eval_metric": ['error', 'auc'],
+    "tree_method": 'hist',
+    "seed":111111,
+    "nthread": -1,
+    "max_depth":tuned_depth,
+    "min_child_weight": tuned_min_child_weight
+}
+
+for g in gamma:
+    new_params = params.copy()
+    new_params['gamma'] = float(g)
+
+    optimalgammaboost = xgb.cv(
+        params= new_params,
+        dtrain = dtrain,
+        num_boost_round = 997,
+        nfold = 5, 
+        early_stopping_rounds = 20, 
+        stratified = True,
+        shuffle = True, 
+        verbose_eval = False, 
+        seed = 42
+    )
+    best_round = len(optimalgammaboost)
+    best_row = optimalgammaboost.iloc[best_round-1]
+    gamma_results.append({
+        "gamma":g,
+        "best_round":int(best_round),
+        "test_auc": float(best_row['test-auc-mean']),
+        'test_error':float(best_row['test-error-mean'])
+    })
+
+    gamma_df = pd.DataFrame(gamma_results).sort_values(['test_error', 'test_auc'], ascending=[True, False]).reset_index(drop=True)
+    gamma_df
+
+```
+
+
+```{python}
+num_boost_rounds = num_boost_rounds
+best_gamma = .05
+tuned_depth = 10
+tuned_min_child_weight = 5
+
+params = {
+    "objective": 'binary:logistic',
+    "eta": .1,
+    "eval_metric": ['error', 'auc'],
+    "tree_method": 'hist',
+    "seed":111111,
+    "nthread": -1,
+    "max_depth":tuned_depth,
+    "min_child_weight": tuned_min_child_weight,
+    "gamma": best_gamma
+}
+```
+
+Subsample and colsample_bytree tuning
+```{python}
+additional_params = {
+    "subsample":[.4, .5, .6, .7, .8, .9, 1],
+    "colsample_bytree":[.4, .5, .6, .7, .8, .9, 1]
+}
+
+tuned_subsamples_results = []
+
+for ss in additional_params['subsample']:
+    for cst in additional_params['colsample_bytree']:
+        best_params = params.copy()
+        best_params['subsample'] = ss
+        best_params['colsample_bytree'] = cst
+
+        tuned_subsamples = xgb.cv(
+            params = best_params, 
+            dtrain = dtrain, 
+            num_boost_round = num_boost_rounds,
+            nfold = 5,
+            early_stopping_rounds = 20,
+            stratified = True, 
+            shuffle = True, 
+            verbose_eval = False, 
+            seed = 42
+        )
+
+        best_round = len(tuned_subsamples)
+        best_row =  tuned_subsamples.iloc[best_round-1]
+
+
+        tuned_subsamples_results.append({
+            "subsample":ss, 
+            "colsample_bytree": cst,
+            "best_round": int(best_round),
+            "test_auc": float(best_row['test-auc-mean']),
+            'test_error':float(best_row['test-error-mean'])
+        })
+
+        tuned_subsamples_results_df = pd.DataFrame(tuned_subsamples_results)
+
+
 ```

@@ -23,7 +23,7 @@ from plotnine import *
 Loading in Data
 
 ```{python}
-data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FINALDATANov26.feather")
+data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/CORRECTEDFINALDATA.feather")
 ```
 
 Split between train and test, going to do via subsetting and have 80% in train, 20% in test
@@ -89,16 +89,50 @@ melted_data = data.melt(
     id_vars=['Date', 'Ticker', 'Movement'], 
     
     value_vars=[
-       'Open', 'High', 'Low', 'Close', 'Volume', 'Day_Range',
-       'SMA_5', 'SMA_12', 'SMA_15', 'SMA_20', 'SMA_26', 'SMA_30', 'SMA_50',
-       'EMA_5', 'EMA_12', 'EMA_26', 'EMA_50', 'MACD', 'RSI',
-       'Bollinger_Band_Middle', 'SD', 'Bollinger_Band_Upper',
-       'Bollinger_Band_Lower', 'OBV', '^VIX', 'EPS Estimate', 'Reported EPS',
-       'Surprise(%)', 'earnings_bool', 'Split Ratio', 'Split_Indicator',
-       'weekly_averages', 'Weekly_SD', 'Two_week_averages', 'Two_Week_SD ',
-       'Monthly_SD', 'Monthly_Average', 'Daily_Return', 'Day_to_Day_Diff',
-       'Day_to_Day_Percent_Diff', 'Five_Day_Percent_Diff',
-       'Two_Week_Percent_Diff', 'Monthly_Percent_Diff'],
+ 'Open',
+ 'High',
+ 'Low',
+ 'Close',
+ 'Volume',
+ 'Day_Range',
+ 'SMA_5',
+ 'SMA_12',
+ 'SMA_15',
+ 'SMA_20',
+ 'SMA_26',
+ 'SMA_30',
+ 'SMA_50',
+ 'EMA_5',
+ 'EMA_12',
+ 'EMA_26',
+ 'EMA_50',
+ 'MACD',
+ 'RSI',
+ 'Bollinger_Band_Middle',
+ 'SD',
+ 'Bollinger_Band_Upper',
+ 'Bollinger_Band_Lower',
+ 'OBV',
+ '^VIX',
+ 'EPS Estimate',
+ 'Reported EPS',
+ 'Surprise(%)',
+ 'earnings_bool',
+ 'Split Ratio',
+ 'Split_Indicator',
+ 'weekly_averages',
+ 'Weekly_SD',
+ 'Two_week_averages',
+ 'Two_Week_SD ',
+ 'Monthly_SD',
+ 'Monthly_Average',
+ 'Daily_Return',
+ 'next_day_pct_change',
+ 'next_5_day_pct_change',
+ 'Movement_5_day',
+ 'next_30_day_pct_change',
+ 'Movement_30_day',
+],
        
     var_name='Metric',
     value_name='Value'
