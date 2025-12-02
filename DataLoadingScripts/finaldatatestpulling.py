@@ -14,7 +14,7 @@ download_dir = "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/DataPipeline
 url = "https://datahub.io/core/s-and-p-500-companies-financials/r/constituents.csv"
 output_file = "test_sp500_data.csv" 
 final_output_file = "combined_sp500_data.csv" 
-start_date = "2025-11-11"
+start_date = "2024-11-11"
 end_date = "2025-12-01"
 desired_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Ticker']
 
