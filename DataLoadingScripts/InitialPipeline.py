@@ -1,6 +1,6 @@
 
 
-def initial_data_loading_pipeline (start_date, end_date, download_dir, final_output_file):
+def initial_data_loading_pipeline (start_date, end_date,columns, download_dir, final_output_file):
 
     import pandas as pd
     import yfinance as yf
@@ -12,10 +12,10 @@ def initial_data_loading_pipeline (start_date, end_date, download_dir, final_out
     download_dir = download_dir
     url = "https://datahub.io/core/s-and-p-500-companies-financials/r/constituents.csv"
     output_file = "test_sp500_data.csv" 
-    final_output_file = "combined_sp500_data.csv" 
+    final_output_file = final_output_file 
     start_date = start_date
     end_date = end_date
-    desired_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Ticker']
+    desired_columns = columns
 
     start_time = time.time() 
 
@@ -71,16 +71,37 @@ def initial_data_loading_pipeline (start_date, end_date, download_dir, final_out
 
         print("\n--- Download Phase Complete ---\n")
 
-    date_regex = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
-    df = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/combined_sp500_data.csv", header=None)
+    folder_path =  download_dir
+    all_data = []
+
+    
+
+    for file_name in os.listdir(folder_path):
+        if file_name.endswith(".csv"):
+            file_path = os.path.join(folder_path, file_name)
+            
+            df = pd.read_csv(file_path)
+            
+            df['source_file'] = os.path.splitext(file_name)[0]
+            
+            all_data.append(df)
+
+    final_df = pd.concat(all_data, ignore_index=True)
+
+    
+    df = final_df
+    print(df) #good up to here
+
+    print("All CSVs have been combined successfully!")
+
+    date_regex = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
     clean = df[df[0].astype(str).str.match(date_regex)]
+    df = clean
 
     date_regex = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-
-    df = clean
 
     df = df[df[0].astype(str).str.match(date_regex)]
 
@@ -97,8 +118,10 @@ start_date = "2024-11-11"
 end_date = "2025-11-10"
 download_dir = "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/DataPipelineData"
 final_output_file = "combined_sp500_data.csv" 
+columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Ticker']
 
 
-initial_data_loading_pipeline(start_date=start_date, end_date=end_date, download_dir=download_dir, final_output_file=final_output_file)
+
+initial_data_loading_pipeline(start_date=start_date, end_date=end_date,columns=columns, download_dir=download_dir, final_output_file=final_output_file)
 
 
