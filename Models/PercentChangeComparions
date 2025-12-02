@@ -7,6 +7,7 @@ format: html
 ```{python}
 import joblib
 import pandas as pd
+from plotnine import *
 ```
 
 
@@ -260,3 +261,69 @@ print(thirty_day_rmse)
 ```
 
 thirty day RMSE: 0.0703095
+
+
+Creating a Dataframe so can compare RMSE and MSE and across time periods
+
+```{python}
+comparison_df_MSE = pd.DataFrame({
+    'one_day_mse': Final_MSE_1,
+    'five_day_mse': Final_MSE_5,
+    'thirty_day_mse':Final_MSE_30,
+},index=['Model Performance'])
+```
+
+```{python}
+comparison_df_RMSE = pd.DataFrame({
+    'one_day_RMSE': one_day_rmse,
+    'five_day_RMSE':five_day_rmse,
+    'thirty_day_RMSE':thirty_day_rmse
+},index=['Model Performance'])
+```
+
+```{python}
+melted_comparison_df_MSE =pd.melt(comparison_df_MSE )
+melted_comparison_df_RMSE = pd.melt(comparison_df_RMSE)
+```
+
+Comparing MSE across time periods
+
+```{python}
+MSE_plot = (ggplot(melted_comparison_df_MSE, aes(x = 'value'))+
+            geom_bar())
+```
+
+
+```{python}
+
+MSE_plot = (
+    ggplot(melted_comparison_df_MSE, aes(x='variable', y='value'))
+    + geom_bar(stat='identity') 
+    + labs(
+        x='Forecast Horizon',
+        y='Mean Squared Error (MSE)',
+        title='Comparison of MSE across Forecast Horizons'
+    )
+    + aes(fill='variable') 
+)
+
+
+```
+
+It makes sense get the lowest MSE with the one day prediction and highest with one month
+
+```{python}
+RMSE_plot = (
+    ggplot(melted_comparison_df_RMSE, aes(x='variable', y='value'))
+    + geom_bar(stat='identity') 
+    + labs(
+        x='Forecast Horizon',
+        y='Root Mean Squared Error (RMSE)',
+        title='Comparison of RMSE across Forecast Horizons'
+    )
+    + aes(fill='variable')  + 
+    theme_minimal()
+)
+```
+
+It makes sense get the lowest RMSE with the one day prediction and highest with one month
