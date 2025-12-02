@@ -70,3 +70,35 @@ final_df = pd.concat(all_data, ignore_index=True)
 final_df.to_csv("combined_data.csv", index=False)
 
 print("All CSVs have been combined successfully!")
+
+
+
+
+
+import os
+import pandas as pd
+
+# Path to the folder containing all ticker CSV files
+parent_dir = r "/Users/lukeromes/Desktop/Notre Dame/Mod2/Machine Learning/sp500_yearly_data"
+
+all_data = []
+
+for file_name in os.listdir(parent_dir):
+    if file_name.endswith(".csv"):
+        file_path = os.path.join(parent_dir, file_name)
+
+        df = pd.read_csv(file_path)
+
+        # Add ticker symbol
+        ticker = os.path.splitext(file_name)[0]
+        df['Ticker'] = ticker
+
+        all_data.append(df)
+
+# Combine all CSVs
+final_df = pd.concat(all_data, ignore_index=True)
+
+# Save combined file
+final_df.to_csv("combined_data.csv", index=False)
+
+print("Combined successfully!")

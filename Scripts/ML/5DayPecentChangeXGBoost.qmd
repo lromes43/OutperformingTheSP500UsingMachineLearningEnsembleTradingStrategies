@@ -582,6 +582,6 @@ RMSE_Change
 
 ```{python}
 import joblib
-final_model_filename = 'ContinuousThirtyDayFinal.joblib'
-joblib.dump(FinalBoosted_30, final_model_filename)
+final_model_filename = 'ContinuousFiveDayFinal.joblib'
+joblib.dump(FinalBoosted_5, final_model_filename)
 ```
