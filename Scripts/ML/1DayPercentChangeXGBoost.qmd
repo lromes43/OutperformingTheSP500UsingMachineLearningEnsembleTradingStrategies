@@ -119,13 +119,13 @@ MSE
 
 ```{python}
 error = []
-for i in range(0, len(merged_MAE_df+1)):
+for i in range(0, len(merged+1)):
     diff = float(merged['actual'].iloc[i] - merged['Initial_Predicted'].iloc[i]) **2
     error.append(diff)
     MSE = (1/len(merged)) * sum(error)
 ```
 
-MSE for one day change: 0.0004568
+MSE for one day change: 0.011406
 
 
 
@@ -138,14 +138,14 @@ one_day_rmse = MSE**.5
 print(one_day_rmse)
 ```
 
-Getting 0.02137
+Getting 0.1068
 
 
 
 
 ```{python}
 threshold = 0.005
-close_accuracy = np.mean(np.abs(y_pred_one - y_test_final) <= threshold)
+close_accuracy = np.mean(np.abs(merged['actual']- merged['Initial_Predicted']) <= threshold)
 print("Within ±0.5% accuracy:", close_accuracy)
 
 ```
@@ -579,6 +579,6 @@ RMSE_Change
 
 ```{python}
 import joblib
-final_model_filename = 'ContinuousOneDayFinal.job.lib'
+final_model_filename = 'ContinuousOneDayFinal.joblib'
 joblib.dump(FinalBoosted, final_model_filename)
 ```
