@@ -1,3 +1,6 @@
+#I used chat to help me generate the data pulling and merging
+
+
 import pandas as pd
 import yfinance as yf
 import os
@@ -5,18 +8,18 @@ import time
 import sys
 
 
+
+
 download_dir = "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/DataPipelineData"
 url = "https://datahub.io/core/s-and-p-500-companies-financials/r/constituents.csv"
-output_file = "test_sp500_data.csv"
-
-
+output_file = "test_sp500_data.csv" 
+final_output_file = "combined_sp500_data.csv" 
 start_date = "2025-11-11"
 end_date = "2025-12-01"
-
-
 desired_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Ticker']
 
 start_time = time.time() 
+
 
 
 os.makedirs(download_dir, exist_ok=True)
@@ -33,7 +36,6 @@ try:
 except Exception as e:
     print(f"Error loading S&P 500 list: {e}")
     sys.exit(1)
-
 
 
 if tickers:
@@ -72,30 +74,31 @@ if tickers:
 
 
 
-folder_path = "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/DataPipelineData"
+
+import pandas as pd
+import re
+
+date_regex = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+df = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/combined_sp500_data.csv", header=None)
 
 
+clean = df[df[0].astype(str).str.match(date_regex)]
 
-all_data = []
-
-
-for file_name in os.listdir(folder_path):
-    if file_name.endswith(".csv"):
-        file_path = os.path.join(folder_path, file_name)
-        
-      
-        df = pd.read_csv(file_path)
-        
-    
-        df['source_file'] = os.path.splitext(file_name)[0]
-        
-   
-        all_data.append(df)
+clean.to_csv("cleaned.csv", index=False, header=False)
 
 
-final_df = pd.concat(all_data, ignore_index=True)
+import pandas as pd
+import re
+
+date_regex = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+df = pd.read_csv("cleaned.csv", header=None)
 
 
-final_df.to_csv("combined_data.csv", index=False)
+df = df[df[0].astype(str).str.match(date_regex)]
 
-print("All CSVs have been combined successfully!")
+df.columns = ["Date", "Open", "High", "Low", "Close", "Volume", "Ticker"]
+
+df.to_feather('FinalTestData.feather')
+
