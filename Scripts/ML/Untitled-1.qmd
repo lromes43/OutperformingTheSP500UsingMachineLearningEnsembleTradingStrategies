@@ -523,7 +523,7 @@ continuousone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Mode
 
 Transform data to correct format for models
 
-One Day Binary
+Thirty Day Binary
 
 Only need dtest
 ```{python}
@@ -539,7 +539,7 @@ drop_cols = ['Date', 'next_day_pct_change',
 
 X = transformed_data.drop(drop_cols, axis = 1)
 X_final = pd.get_dummies(X, drop_first=True)
-actual = transformed_data['Movement'].astype(int)
+actual = transformed_data['Movement_30_day'].astype(int)
 
 dtest = xgb.DMatrix(X_final, label = actual)
 ```
@@ -584,63 +584,45 @@ actual = actual.reset_index().rename(columns={'index': 'iteration'})
 merged_binary = pd.merge(pred_final_df, actual, how='inner', on='iteration')
 sorted_ticker_series = transformed_data['Ticker'].sort_values(ascending=True)
 merged_binary['ticker'] = sorted_ticker_series.reset_index(drop=True)
+merged_binary_thirty = merged_binary
 
 
 
 ```
 
-```{python}
-cm = confusion_matrix(actual, pred_final)
-finalboostedcm = ConfusionMatrixDisplay(confusion_matrix=cm)
-finalboostedcm.plot(cmap = "Blues")
-plt.title("Final Boosted Confusion Matrix")
-plt.show()
-final_boosted_acc = accuracy_score(actual, pred_final)
-print(final_boosted_acc)
-```
 
-One Day Continuous
+
+30 Day Continuous
 
 ```{python}
-X= subset2.drop([
-    'next_day_pct_change','next_5_day_pct_change',
-    'Movement_5_day','next_30_day_pct_change','Movement_30_day','Movement'
-], axis=1)
-
-X_raw = pd.get_dummies(X, drop_first=True)
-
-X_final = X_raw.apply(pd.to_numeric, errors='coerce').fillna(0)
-
-y_final = subset2['next_day_pct_change'].astype(float)
-
-dtrain = xgb.DMatrix(X_final, label=y_final)
-
-dtest = xgb.DMatrix(X_final, label=y_final)
-
-```
-
-```{python}
-y_pred_one = continuousone.predict(dtest)
-```
-
-```{python}
-y_pred_one = continuousone.predict(dtest)
-y_test_new = y_final.reset_index()
+y_pred_thirty = continuousone.predict(dtest)
+merged_cont_thirty = pd.DataFrame(merged_cont_thirty)
 y_test_new = y_test_new.reset_index().drop('index', axis =1).rename(columns = {'level_0':'iteration', 'next_day_pct_change': 'actual'})
-MAE_df = pd.DataFrame(y_pred_one).reset_index().rename(columns = {'index': 'iteration', 0 : 'Initial_Predicted'})
-merged = pd.merge(y_test_new, MAE_df, how = 'inner', on = 'iteration')
+cols = y_test_new.columns.tolist()
 
+cols_to_keep = ['iteration', 'next_30_day_pct_change']
+y_test_new_cleaned = y_test_new[cols_to_keep].iloc[:, [0, -1]]
+
+y_test_new_cleaned = y_test_new.iloc[:, [0, 3]].copy()
+y_test_new_cleaned.columns = ['iteration', 'actual'] 
+MAE_df = pd.DataFrame(y_pred_one).reset_index().rename(columns = {'index': 'iteration', 0 : 'Initial_Predicted'})
+
+merged = pd.merge(y_test_new_cleaned, MAE_df, how = 'inner', on = 'iteration')
 
 merged['Initial_Predicted'] = merged['Initial_Predicted'] * 100 
 
-
 sorted_ticker_series = subset2['Ticker'].sort_values(ascending=True)
 merged['ticker'] = sorted_ticker_series.reset_index(drop=True)
+merged_cont_thirty = merged 
+merged_cont_thirty = merged_cont_thirty.rename(columns = {'next_5_day_pct_change': 'actual'})
 ```
+
+Cannot make predictions yet due to it month not being here.
+
 
 ```{python}
 
-squared_errors = (merged['actual'] - merged['Initial_Predicted']) ** 2
+squared_errors = (merged_cont_thirty['actual'] - merged_cont_thirty['Initial_Predicted']) ** 2
 
 MSE = squared_errors.mean()
 MSE_percent = MSE * 100
@@ -656,13 +638,8 @@ print(f" one day rmse: {one_day_rmse}")
 print(f"one day rmse percent: {one_day_rmse_percent}")
 
 threshold = 0.5 
-close_accuracy = np.mean(np.abs(merged['actual'] - merged['Initial_Predicted']) <= threshold)
+close_accuracy = np.mean(np.abs(merged_cont_thirty['actual'] - merged_cont_thirty['Initial_Predicted']) <= threshold)
 print(f"Within ±0.5% accuracy (in percentage points): {close_accuracy}")
 ```
 
 
-MSE: 4.16203176567713
-MSE_percent: 416.20317656771306
-one day rmse: 2.0401058221761756
-one day rmse percent: 204.01058221761755
-Within ±0.5% accuracy (in percentage points): 0.2434077079107505

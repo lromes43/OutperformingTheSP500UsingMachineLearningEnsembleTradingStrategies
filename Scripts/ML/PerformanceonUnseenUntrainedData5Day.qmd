@@ -587,10 +587,12 @@ actual = actual.reset_index().rename(columns={'index': 'iteration'})
 merged_binary = pd.merge(pred_final_df, actual, how='inner', on='iteration')
 sorted_ticker_series = transformed_data['Ticker'].sort_values(ascending=True)
 merged_binary['ticker'] = sorted_ticker_series.reset_index(drop=True)
-merged_binary_one = merged_binary
+merged_binary_five = merged_binary
 
+```
 
-
+```{python}
+merged_binary_five.to_csv("binary5unseen.csv")
 ```
 
 
@@ -636,6 +638,11 @@ merged['ticker'] = sorted_ticker_series.reset_index(drop=True)
 merged_cont_five = merged 
 merged_cont_five = merged_cont_five.rename(columns = {'next_5_day_pct_change': 'actual'})
 ```
+
+```{python}
+merged_cont_five.to_csv("cont5unseen.csv")
+```
+
 
 ```{python}
 

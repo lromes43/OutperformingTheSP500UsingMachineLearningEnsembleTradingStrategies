@@ -2,16 +2,6 @@
 title: "Untitled"
 format: html
 ---
-
----
-title: "Untitled"
-format: html
----
-
----
-title: "Untitled"
-format: html
----
 Want to see how model preforms on unseen data it is not trained on at all! SO i pulled nov 11 - nov 28
 
 ```{python}
@@ -525,8 +515,8 @@ transformed_data = transformed_data.rename(columns={'Two_Week_SD': 'Two_Week_SD 
 Loading in models
 
 ```{python}
-binarythirty = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/FinalBoostedThirtyDayClassifier.joblib")
-continuousthirty = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/ContinuousThirtyDayFinal.joblib")
+binaryone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/FinalBoostedOneDayClassifier.joblib")
+continuousone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/ContinuousOneDayFinal.job.lib")
 ```
 
 
@@ -571,6 +561,8 @@ for i, feature in enumerate(required_features):
 
 Predict on new data binary
 ```{python}
+
+
 pred = binaryone.predict(dtest)
 pred_final = (pred >=.5).astype(int)
 
@@ -582,7 +574,7 @@ plt.show()
 final_boosted_acc = accuracy_score(actual, pred_final)
 print(final_boosted_acc)
 
-#Getting 28.2% accuracy
+#Getting 63.5% accuracy
 
 
 
@@ -592,55 +584,45 @@ actual = actual.reset_index().rename(columns={'index': 'iteration'})
 merged_binary = pd.merge(pred_final_df, actual, how='inner', on='iteration')
 sorted_ticker_series = transformed_data['Ticker'].sort_values(ascending=True)
 merged_binary['ticker'] = sorted_ticker_series.reset_index(drop=True)
-merged_binary_one = merged_binary
+merged_binary_thirty = merged_binary
 
 
 
 ```
 
-
-Five Day Continuous
-
 ```{python}
-X = transformed_data.drop(['Date',
-    'next_day_pct_change','next_5_day_pct_change',
-    'Movement_5_day','next_30_day_pct_change',
-    'Movement_30_day','Movement'
-], axis=1)
-
-if 'Date' in X.columns:
-    X['Date'] = pd.to_datetime(X['Date']).view('int64')
-
-
-X_raw = pd.get_dummies(X, drop_first=True)
-
-required_features = continuousone.feature_names
-X_final = X_raw.reindex(columns=required_features, fill_value=0)
-
-X_final = X_final.apply(pd.to_numeric, errors='coerce').fillna(0)
-y_final = transformed_data['next_30_day_pct_change'].astype(float)
-
-dtest = xgb.DMatrix(X_final)
-
+merged_binary_thirty.to_csv("binary30unseen.csv")
 ```
 
 
+
+30 Day Continuous
+
 ```{python}
-y_pred_one = continuousone.predict(dtest)
-y_test_new = y_final.reset_index()
+y_pred_thirty = continuousone.predict(dtest)
+merged_cont_thirty = pd.DataFrame(merged_cont_thirty)
 y_test_new = y_test_new.reset_index().drop('index', axis =1).rename(columns = {'level_0':'iteration', 'next_day_pct_change': 'actual'})
-MAE_df = pd.DataFrame(y_pred_one).reset_index().rename(columns = {'index': 'iteration', 0 : 'Initial_Predicted'})
-merged = pd.merge(y_test_new, MAE_df, how = 'inner', on = 'iteration')
+cols = y_test_new.columns.tolist()
 
+cols_to_keep = ['iteration', 'next_30_day_pct_change']
+y_test_new_cleaned = y_test_new[cols_to_keep].iloc[:, [0, -1]]
+
+y_test_new_cleaned = y_test_new.iloc[:, [0, 3]].copy()
+y_test_new_cleaned.columns = ['iteration', 'actual'] 
+MAE_df = pd.DataFrame(y_pred_one).reset_index().rename(columns = {'index': 'iteration', 0 : 'Initial_Predicted'})
+
+merged = pd.merge(y_test_new_cleaned, MAE_df, how = 'inner', on = 'iteration')
 
 merged['Initial_Predicted'] = merged['Initial_Predicted'] * 100 
 
-
 sorted_ticker_series = subset2['Ticker'].sort_values(ascending=True)
 merged['ticker'] = sorted_ticker_series.reset_index(drop=True)
-merged_cont_thirty= merged 
-merged_cont_thirty = merged_cont_five.rename(columns = {'next_5_day_pct_change': 'actual'})
+merged_cont_thirty = merged 
+merged_cont_thirty = merged_cont_thirty.rename(columns = {'next_5_day_pct_change': 'actual'})
 ```
+
+Cannot make predictions yet due to it month not being here.
+
 
 ```{python}
 
@@ -663,11 +645,5 @@ threshold = 0.5
 close_accuracy = np.mean(np.abs(merged_cont_thirty['actual'] - merged_cont_thirty['Initial_Predicted']) <= threshold)
 print(f"Within ±0.5% accuracy (in percentage points): {close_accuracy}")
 ```
-
-MSE: 17.683659270995815
-MSE_percent: 1768.3659270995815
-one day rmse: 4.205194320242028
-one day rmse percent: 420.5194320242028
-Within ±0.5% accuracy (in percentage points): 0.07475031210986267
 
 

@@ -590,8 +590,10 @@ sorted_ticker_series = transformed_data['Ticker'].sort_values(ascending=True)
 merged_binary['ticker'] = sorted_ticker_series.reset_index(drop=True)
 merged_binary_one = merged_binary
 
+```
 
-
+```{python}
+merged_binary_one.to_csv("binaryoneunseen.csv")
 ```
 
 
@@ -635,6 +637,10 @@ merged['Initial_Predicted'] = merged['Initial_Predicted'] * 100
 sorted_ticker_series = subset2['Ticker'].sort_values(ascending=True)
 merged['ticker'] = sorted_ticker_series.reset_index(drop=True)
 merged_cont_one = merged 
+```
+
+```{python}
+merged_cont_one.to_csv("contoneunseen.csv")
 ```
 
 ```{python}
