@@ -2,139 +2,32 @@
 title: "Untitled"
 format: html
 ---
-Data pulling function
+Want to see how model preforms on unseen data it is not trained on at all! SO i pulled nov 11 - nov 28
 
 ```{python}
-def initial_data_loading(length, frequency):
-    import pandas as pd
-    import yfinance as yf
-    import os
-    import time
-    import sys
-    import re
-
-
-
-    url = "https://datahub.io/core/s-and-p-500-companies-financials/r/constituents.csv"
-    DOWNLOAD_DIR = "sp500_yearly_data"
-    COMBINED_FILE = "combined_sp500_yearly_data.csv"
-
-
-    start_time = time.time() 
-
-
-    try:
-        print("Fetching S&P 500 ticker list...")
-        sp500 = pd.read_csv(url)
-        tickers = sp500['Symbol'].tolist()
-        os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-        print(f"Starting download for {len(tickers)} S&P 500 companies.\n")
-    except Exception as e:
-        print(f"Error loading S&P 500 list: {e}")
-        sys.exit(1)
-
-
-    print("--- Download Phase ---")
-    for i, ticker in enumerate(tickers):
-        file_path = os.path.join(DOWNLOAD_DIR, f"{ticker}.csv")
-        
-    
-        if os.path.exists(file_path):
-            print(f"⏩ Skipping {ticker} ({i+1}/{len(tickers)}) — already exists")
-            continue
-        
-        try:
-            print(f"⬇️ Downloading {ticker} ({i+1}/{len(tickers)})...", end='\r')
-            
-        
-            data = yf.download(ticker, period="length", interval="frequency", progress=False)
-            
-            if data.empty:
-                print(f"⚠️ No data for {ticker} (Possible delisting/missing data).")
-                continue
-            
-            data.to_csv(file_path)
-            print(f"Saved {ticker} ({len(data)} rows)                       \n")
-            
-            time.sleep(0.5)  
-            
-        except Exception as e:
-            print(f" Error with {ticker}: {e}")
-            time.sleep(5)  
-
-    print("--- Download Phase Complete ---\n")
-
-
-    print(f"--- Merging Data from '{DOWNLOAD_DIR}' ---")
-    all_data = []
-    file_count = 0
-
-
-    for file_name in os.listdir(DOWNLOAD_DIR):
-        if file_name.endswith(".csv"):
-            file_path = os.path.join(DOWNLOAD_DIR, file_name)
-            
-            try:
-            
-                df = pd.read_csv(file_path)
-                
-            
-                ticker = os.path.splitext(file_name)[0]
-                df['Ticker'] = ticker
-                
-            
-                all_data.append(df)
-                file_count += 1
-            except Exception as e:
-                print(f"Error reading and processing {file_name}: {e}")
-
-
-    if all_data:
-        final_df = pd.concat(all_data, ignore_index=True)
-        final_df.to_csv("combined_sp500_yearly_data.csv")
-        
-        
-        print(f"✅ Successfully combined {file_count} CSVs.")
-        print(f"Data saved to: {COMBINED_FILE}")
-        print(f"Total rows in combined file: {len(final_df)}")
-    else:
-        print(" No CSV files were found to combine.")
-
-    end_time = time.time()
-    print(f"\nTotal execution time: {end_time - start_time:.2f} seconds")
-
-    date_regex = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-
-    df = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/combined_sp500_yearly_data.csv")
-    
-    df.columns = ["Unnamed Index Column", "Date", "Open", "High", "Low", "Close", "Volume", "Ticker"]
-
-    df = df.drop(columns=["Unnamed Index Column"])
-    
-    clean = df[df['Date'].astype(str).str.match(date_regex)]
-
-    clean.to_csv("cleaned.csv", index=False)
-
-    final_df = clean
-
-    print(f"\nFinal DataFrame Columns: {final_df.columns.tolist()}")
-
-    return final_df
-
+import pandas as pd
+import joblib
+import pandas as pd 
+import numpy as np   
+from plotnine import *  
+import xgboost as xgb 
+from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.impute import SimpleImputer
+from sklearn.metrics import (
+    accuracy_score, log_loss, roc_auc_score, confusion_matrix, classification_report, ConfusionMatrixDisplay, f1_score
+)
+from sklearn.model_selection import ParameterGrid
+from tqdm import tqdm 
+import matplotlib.pyplot as plt
+import shap
+from sklearn.metrics import roc_curve, roc_auc_score
+from sklearn.preprocessing import StandardScaler
 ```
 
-
-Calling Data Pulling Function
+Load in data and preform the function preprocess to create all variables
 ```{python}
-length = '1y'
-frequency = '1d'
+data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FinalTestDataForPipeline.feather")
 
-initial_data_loading(length=length, frequency=frequency)
-```
-
-Dervied Vars Function
-
-```{python}
 def preprocess (data):
     import pandas as pd
     import numpy as np
@@ -389,6 +282,7 @@ def preprocess (data):
     vix["Date"] = pd.to_datetime(vix["Date"])
     data["Date"] = pd.to_datetime(data["Date"])
     data = data.merge(vix, on="Date", how="left")
+    data.rename(columns={'VIX_Close': '^VIX'}, inplace=True)
 
 
     #earnings data
@@ -464,7 +358,7 @@ def preprocess (data):
     #two week averages
 
     data['Two_week_averages'] = data.groupby('Ticker')['Close'].transform(lambda x: x.rolling(14, min_periods=1).mean())
-    data['Two_Week_SD'] = data.groupby('Ticker')['Close'].transform(lambda x: x.rolling(14, min_periods=1).std())
+    data['Two_Week_SD '] = data.groupby('Ticker')['Close'].transform(lambda x: x.rolling(14, min_periods=1).std())
 
     #month average
 
@@ -512,21 +406,6 @@ def preprocess (data):
     data = merged_df
 
     #Reordering
-
-
-    cols_reordered = [
-        'Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Ticker', 'Day_Range', 
-        'SMA_5', 'SMA_12', 'SMA_15', 'SMA_20', 'SMA_26', 'SMA_30', 'SMA_50', 
-        'EMA_5', 'EMA_12', 'EMA_26', 'EMA_50', 'MACD', 'RSI', 'Bollinger_Band_Middle', 
-        'SD', 'Bollinger_Band_Upper', 'Bollinger_Band_Lower', 'OBV',
-        'EPS Estimate', 'Reported EPS', 'Surprise(%)', 'earnings_bool', 
-        'Split Ratio', 'Split_Indicator', 'Daily_Return', 
-        'weekly_averages', 'Two_week_averages', 'Monthly_Average', 
-        'Weekly_SD', 'Two_Week_SD', 'Monthly_SD'
-        ]
-    data = data.loc[:, cols_reordered]
-
-
     Day_to_Day_Diff = []
 
     for ticker in data['Ticker'].unique():
@@ -541,7 +420,7 @@ def preprocess (data):
             else:
                 price_today = subset['Close'].iloc[i]
                 price_tom = subset['Close'].iloc[i+1]
-                diff_val = (price_tom - price_today) / price_today  # percent change
+                diff_val = ((price_tom - price_today) / price_today)*100  # percent change
             individual_d2d_diff.append(diff_val)
 
         subset['next_day_pct_change'] = individual_d2d_diff
@@ -553,95 +432,237 @@ def preprocess (data):
 
     data = data.sort_values(['Ticker', 'Date'])
 
-    data['next_5_day_pct_change'] = (
+    data['next_5_day_pct_change'] = ((
         data.groupby('Ticker')['Close'].shift(-5) - data['Close']
-    ) / data['Close']
+    ) / data['Close'] ) *100
 
     data['Movement_5_day'] = (data['next_5_day_pct_change'] > 0).astype(int)
     data = data.sort_values(['Ticker', 'Date'])
 
-    data['next_30_day_pct_change'] = (
+    data['next_30_day_pct_change'] = ((
         data.groupby('Ticker')['Close'].shift(-30) - data['Close']
-    ) / data['Close']
+    ) / data['Close']) * 100
 
     data['Movement_30_day'] = (data['next_30_day_pct_change'] > 0).astype(int)
+
+    cols_reordered = ['Date',
+    'Open',
+    'High',
+    'Low',
+    'Close',
+    'Volume',
+    'Ticker',
+    'Day_Range',
+    'SMA_5',
+    'SMA_12',
+    'SMA_15',
+    'SMA_20',
+    'SMA_26',
+    'SMA_30',
+    'SMA_50',
+    'EMA_5',
+    'EMA_12',
+    'EMA_26',
+    'EMA_50',
+    'MACD',
+    'RSI',
+    'Bollinger_Band_Middle',
+    'SD',
+    'Bollinger_Band_Upper',
+    'Bollinger_Band_Lower',
+    'OBV',
+    '^VIX',
+    'EPS Estimate',
+    'Reported EPS',
+    'Surprise(%)',
+    'earnings_bool',
+    'Split Ratio',
+    'Split_Indicator',
+    'weekly_averages',
+    'Weekly_SD',
+    'Two_week_averages',
+    'Two_Week_SD ',
+    'Monthly_SD',
+    'Monthly_Average',
+    'next_day_pct_change',
+    'Movement',
+    'next_5_day_pct_change',
+    'Movement_5_day',
+    'next_30_day_pct_change',
+    'Movement_30_day']
+   
+    data = data.loc[:, cols_reordered]
+
+
     final_data = data
-    final_data.to_feather('CHECKFEATHER.feather')
+    final_data.to_feather('DerivedAttributes.feather')
 
     final_data 
 
+preprocess(data)
+transformed_data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/DerivedAttributes.feather")
 
 ```
 
-Calling Creating Vars Function
 
+First Day not in model, training or validation is 2025-11-11 so will subset that so can see how one day binary and continuous preform
+```{python}
+transformed_data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/DerivedAttributes.feather")
+
+transformed_data = transformed_data.rename(columns={'Two_Week_SD': 'Two_Week_SD '}) 
+```
+
+Loading in models
+
+```{python}
+binaryone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/FinalBoostedOneDayClassifier.joblib")
+continuousone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/ContinuousOneDayFinal.job.lib")
+binaryfive = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/FinalBoostedFiveDayClassifier.joblib")
+continuousfive = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/ContinuousFiveDayFinal.joblib")
+binarythirty = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/FinalBoostedThirtyDayClassifier.joblib")
+continuousthirty = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/ContinuousThirtyDayFinal.joblib")
+```
+
+
+
+Transform data to correct format for models
+
+One Day Binary
+
+Only need dtest
 ```{python}
 import pandas as pd
-data = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/cleaned.csv")
-test = preprocess(data)
+import xgboost as xgb
 
+drop_cols = ['Date', 'next_day_pct_change',
+ 'next_5_day_pct_change',
+ 'Movement_5_day',
+ 'next_30_day_pct_change',
+ 'Movement_30_day',
+ 'Movement']
 
+X = transformed_data.drop(drop_cols, axis = 1)
+X_final = pd.get_dummies(X, drop_first=True)
+actual = transformed_data['Movement'].astype(int)
 
-```
-
-Check to make sure worked
-```{python}
-test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/TEST.feather")
-test
-```
-
-Test/Train/Split Function
-
-```{python}
-def train_test_split_by_date(data_path, train_end_date, test_start_date):
-    from datetime import date
-    import pandas as pd
-    
-    """
-    Split dataset into train and test sets based on explicit dates.
-
-    Args:
-        data_path (str): Path to feather file containing full dataset.
-        train_end_date (str or pd.Timestamp or datetime.date): Last date for training set.
-        test_start_date (str or pd.Timestamp or datetime.date): First date for test set.
-
-    Returns:
-        train_subset, test_subset (DataFrames)
-    """
-    data = pd.read_feather(data_path)
-    
-    # 1. Ensure the 'Date' column is a proper datetime object
-    # The error message indicates it is already UTC-aware (e.g., datetime64[ns, UTC])
-    data['Date'] = pd.to_datetime(data['Date']) 
-    data = data.sort_values(by=['Ticker', 'Date'])
-
-    # 2. Convert comparison dates to timezone-aware UTC objects (THE FIX)
-    # The .tz_localize('UTC') method makes the naive date UTC-aware.
-    train_end_date = pd.to_datetime(train_end_date).tz_localize('UTC')
-    test_start_date = pd.to_datetime(test_start_date).tz_localize('UTC')
-
-    # 3. Perform the comparison
-    train_subset = data[data['Date'] <= train_end_date]
-    test_subset = data[data['Date'] >= test_start_date]
-
-    # Save to feather
-    train_subset.to_feather("TrainData.feather")
-    test_subset.to_feather("TestData.feather")
-
-    return train_subset, test_subset
-
+dtest = xgb.DMatrix(X_final, label = actual)
 ```
 
 
 ```{python}
-from datetime import date
-data_path = "/Users/lukeromes/Desktop/Personal/Sp500Project/CHECKFEATHER.feather"
-train_end_date = date(2025,8,29)
-test_start_date = date(2025,8,30)
+binaryone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/FinalBoostedOneDayClassifier.joblib")
 
-train_subset, test_subset = train_test_split_by_date(
-    data_path=data_path,
-    train_end_date=train_end_date,
-    test_start_date=test_start_date
-)
+# Print the feature names and their required order
+required_features = binaryone.feature_names
+print("--- Required Feature Order ---")
+for i, feature in enumerate(required_features):
+    print(f"{i+1:03d}: {feature}")
+
 ```
+
+
+
+
+Predict on new data binary
+```{python}
+
+
+pred = binaryone.predict(dtest)
+pred_final = (pred >=.5).astype(int)
+
+cm = confusion_matrix(actual, pred_final)
+finalboostedcm = ConfusionMatrixDisplay(confusion_matrix=cm)
+finalboostedcm.plot(cmap = "Blues")
+plt.title("Final Boosted Confusion Matrix")
+plt.show()
+final_boosted_acc = accuracy_score(actual, pred_final)
+print(final_boosted_acc)
+
+#Getting 63.5% accuracy
+
+
+
+pred_final_df = pd.DataFrame(pred_final)
+pred_final_df = pred_final_df.reset_index().rename(columns={'index': 'iteration', 0: 'actual up/down'})
+actual = actual.reset_index().rename(columns={'index': 'iteration'})
+merged_binary = pd.merge(pred_final_df, actual, how='inner', on='iteration')
+sorted_ticker_series = transformed_data['Ticker'].sort_values(ascending=True)
+merged_binary['ticker'] = sorted_ticker_series.reset_index(drop=True)
+merged_binary_one = merged_binary
+
+
+
+```
+
+
+One Day Continuous
+
+```{python}
+X = transformed_data.drop(['Date',
+    'next_day_pct_change','next_5_day_pct_change',
+    'Movement_5_day','next_30_day_pct_change',
+    'Movement_30_day','Movement'
+], axis=1)
+
+if 'Date' in X.columns:
+    X['Date'] = pd.to_datetime(X['Date']).view('int64')
+
+
+X_raw = pd.get_dummies(X, drop_first=True)
+
+required_features = continuousone.feature_names
+X_final = X_raw.reindex(columns=required_features, fill_value=0)
+
+X_final = X_final.apply(pd.to_numeric, errors='coerce').fillna(0)
+y_final = subset2['next_day_pct_change'].astype(float)
+
+dtest = xgb.DMatrix(X_final)
+
+```
+
+
+```{python}
+y_pred_one = continuousone.predict(dtest)
+y_test_new = y_final.reset_index()
+y_test_new = y_test_new.reset_index().drop('index', axis =1).rename(columns = {'level_0':'iteration', 'next_day_pct_change': 'actual'})
+MAE_df = pd.DataFrame(y_pred_one).reset_index().rename(columns = {'index': 'iteration', 0 : 'Initial_Predicted'})
+merged = pd.merge(y_test_new, MAE_df, how = 'inner', on = 'iteration')
+
+
+merged['Initial_Predicted'] = merged['Initial_Predicted'] * 100 
+
+
+sorted_ticker_series = subset2['Ticker'].sort_values(ascending=True)
+merged['ticker'] = sorted_ticker_series.reset_index(drop=True)
+merged_cont_one = merged 
+```
+
+```{python}
+
+squared_errors = (merged['actual'] - merged['Initial_Predicted']) ** 2
+
+MSE = squared_errors.mean()
+MSE_percent = MSE * 100
+
+print(f"MSE: {MSE}")
+print(f"MSE_percent: {MSE_percent}")
+
+
+one_day_rmse = np.sqrt(MSE) 
+one_day_rmse_percent = one_day_rmse * 100
+
+print(f" one day rmse: {one_day_rmse}")
+print(f"one day rmse percent: {one_day_rmse_percent}")
+
+threshold = 0.5 
+close_accuracy = np.mean(np.abs(merged['actual'] - merged['Initial_Predicted']) <= threshold)
+print(f"Within ±0.5% accuracy (in percentage points): {close_accuracy}")
+```
+
+MSE: 4.1633584312570635
+MSE_percent: 416.33584312570633
+ one day rmse: 2.040430942535685
+one day rmse percent: 204.04309425356848
+Within ±0.5% accuracy (in percentage points): 0.2434077079107505
+
+
