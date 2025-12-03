@@ -1,14 +1,10 @@
-#I used chat to help me generate the data pulling and merging
-
 
 import pandas as pd
 import yfinance as yf
 import os
 import time
 import sys
-
-
-
+import re
 
 download_dir = "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/DataPipelineData"
 url = "https://datahub.io/core/s-and-p-500-companies-financials/r/constituents.csv"
@@ -19,8 +15,6 @@ end_date = "2025-12-01"
 desired_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Ticker']
 
 start_time = time.time() 
-
-
 
 os.makedirs(download_dir, exist_ok=True)
 
@@ -41,7 +35,6 @@ except Exception as e:
 if tickers:
     for i, ticker in enumerate(tickers):
         file_path = os.path.join(download_dir, f"{ticker}.csv")
-        
 
         if os.path.exists(file_path):
             continue
@@ -49,7 +42,6 @@ if tickers:
         try:
             print(f"⬇️ Downloading {ticker} ({i+1}/{len(tickers)})...", end='\r')
             
-           
             data = yf.download(
                 ticker, 
                 start=start_date, 
@@ -57,44 +49,26 @@ if tickers:
                 interval="1d", 
                 progress=False
             )
-            
             if data.empty:
                 continue
-            
-         
             data.to_csv(file_path)
-            
             time.sleep(0.5)
-            
         except Exception as e:
             print(f" Error with {ticker}: {e}")
             time.sleep(5) 
-
     print("\n--- Download Phase Complete ---\n")
-
-
-
-
-import pandas as pd
-import re
 
 date_regex = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 df = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/combined_sp500_data.csv", header=None)
 
-
 clean = df[df[0].astype(str).str.match(date_regex)]
 
 clean.to_csv("cleaned.csv", index=False, header=False)
 
-
-import pandas as pd
-import re
-
 date_regex = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 df = pd.read_csv("cleaned.csv", header=None)
-
 
 df = df[df[0].astype(str).str.match(date_regex)]
 
