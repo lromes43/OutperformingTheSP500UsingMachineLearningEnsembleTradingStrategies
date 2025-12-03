@@ -9,7 +9,24 @@ Want to see how model preforms on the training data
 
 ```{python}
 import pandas as pd
+import joblib
+import pandas as pd 
+import numpy as np   
+from plotnine import *  
+import xgboost as xgb 
+from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.impute import SimpleImputer
+from sklearn.metrics import (
+    accuracy_score, log_loss, roc_auc_score, confusion_matrix, classification_report, ConfusionMatrixDisplay, f1_score
+)
+from sklearn.model_selection import ParameterGrid
+from tqdm import tqdm 
+import matplotlib.pyplot as plt
+import shap
+from sklearn.metrics import roc_curve, roc_auc_score
+from sklearn.preprocessing import StandardScaler
 test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather")
+transformed_data = test
 
 
 ```
@@ -135,7 +152,7 @@ merged = pd.merge(y_test_new, MAE_df, how = 'inner', on = 'iteration')
 merged['Initial_Predicted'] = merged['Initial_Predicted'] * 100 
 
 
-sorted_ticker_series = subset2['Ticker'].sort_values(ascending=True)
+sorted_ticker_series = transformed_data['Ticker'].sort_values(ascending=True)
 merged['ticker'] = sorted_ticker_series.reset_index(drop=True)
 merged_cont_one = merged 
 ```
