@@ -2,6 +2,11 @@
 title: "Untitled"
 format: html
 ---
+
+---
+title: "Untitled"
+format: html
+---
 Want to see how model preforms on unseen data it is not trained on at all! SO i pulled nov 11 - nov 28
 
 ```{python}
@@ -515,19 +520,15 @@ transformed_data = transformed_data.rename(columns={'Two_Week_SD': 'Two_Week_SD 
 Loading in models
 
 ```{python}
-binaryone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/FinalBoostedOneDayClassifier.joblib")
-continuousone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/ContinuousOneDayFinal.job.lib")
 binaryfive = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/FinalBoostedFiveDayClassifier.joblib")
 continuousfive = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/ContinuousFiveDayFinal.joblib")
-binarythirty = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/FinalBoostedThirtyDayClassifier.joblib")
-continuousthirty = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/ContinuousThirtyDayFinal.joblib")
 ```
 
 
 
 Transform data to correct format for models
 
-One Day Binary
+Five Day Binary
 
 Only need dtest
 ```{python}
@@ -543,7 +544,7 @@ drop_cols = ['Date', 'next_day_pct_change',
 
 X = transformed_data.drop(drop_cols, axis = 1)
 X_final = pd.get_dummies(X, drop_first=True)
-actual = transformed_data['Movement'].astype(int)
+actual = transformed_data['Movement_5_day'].astype(int)
 
 dtest = xgb.DMatrix(X_final, label = actual)
 ```
@@ -565,8 +566,6 @@ for i, feature in enumerate(required_features):
 
 Predict on new data binary
 ```{python}
-
-
 pred = binaryone.predict(dtest)
 pred_final = (pred >=.5).astype(int)
 
@@ -578,7 +577,7 @@ plt.show()
 final_boosted_acc = accuracy_score(actual, pred_final)
 print(final_boosted_acc)
 
-#Getting 63.5% accuracy
+#Getting 33.7% accuracy
 
 
 
@@ -595,7 +594,7 @@ merged_binary_one = merged_binary
 ```
 
 
-One Day Continuous
+Five Day Continuous
 
 ```{python}
 X = transformed_data.drop(['Date',
@@ -614,7 +613,7 @@ required_features = continuousone.feature_names
 X_final = X_raw.reindex(columns=required_features, fill_value=0)
 
 X_final = X_final.apply(pd.to_numeric, errors='coerce').fillna(0)
-y_final = subset2['next_day_pct_change'].astype(float)
+y_final = transformed_data['next_5_day_pct_change'].astype(float)
 
 dtest = xgb.DMatrix(X_final)
 
@@ -634,12 +633,13 @@ merged['Initial_Predicted'] = merged['Initial_Predicted'] * 100
 
 sorted_ticker_series = subset2['Ticker'].sort_values(ascending=True)
 merged['ticker'] = sorted_ticker_series.reset_index(drop=True)
-merged_cont_one = merged 
+merged_cont_five = merged 
+merged_cont_five = merged_cont_five.rename(columns = {'next_5_day_pct_change': 'actual'})
 ```
 
 ```{python}
 
-squared_errors = (merged_cont_one ['actual'] - merged_cont_one ['Initial_Predicted']) ** 2
+squared_errors = (merged_cont_five['actual'] - merged_cont_five['Initial_Predicted']) ** 2
 
 MSE = squared_errors.mean()
 MSE_percent = MSE * 100
@@ -655,14 +655,14 @@ print(f" one day rmse: {one_day_rmse}")
 print(f"one day rmse percent: {one_day_rmse_percent}")
 
 threshold = 0.5 
-close_accuracy = np.mean(np.abs(merged_cont_one ['actual'] - merged_cont_one ['Initial_Predicted']) <= threshold)
+close_accuracy = np.mean(np.abs(merged_cont_five['actual'] - merged_cont_five['Initial_Predicted']) <= threshold)
 print(f"Within ±0.5% accuracy (in percentage points): {close_accuracy}")
 ```
 
-MSE: 4.1633584312570635
-MSE_percent: 416.33584312570633
- one day rmse: 2.040430942535685
-one day rmse percent: 204.04309425356848
-Within ±0.5% accuracy (in percentage points): 0.2434077079107505
+MSE: 17.683659270995815
+MSE_percent: 1768.3659270995815
+ one day rmse: 4.205194320242028
+one day rmse percent: 420.5194320242028
+Within ±0.5% accuracy (in percentage points): 0.07475031210986267
 
 
