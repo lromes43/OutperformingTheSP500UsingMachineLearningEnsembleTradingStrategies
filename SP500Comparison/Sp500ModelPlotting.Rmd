@@ -1,0 +1,27 @@
+---
+title: "SP500ModelVsActual"
+output: html_document
+date: "2025-12-04"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(forecast)
+library(tidyverse)
+```
+
+```{r}
+model = read_csv("modelovertime.csv")
+sp500_act = read_csv("sp500_final.csv")
+model_ts <- ts(model$change, start =(2025-09-04), frequency = 365)
+sp500_ts <- ts(sp500_act$change, start = (2025-09-04), frequency = 365)
+```
+
+```{r}
+plot(model_ts) + 
+  lines(sp500_ts, col = 'blue')
+```
+

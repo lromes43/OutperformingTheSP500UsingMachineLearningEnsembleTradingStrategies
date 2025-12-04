@@ -6,7 +6,7 @@ import xgboost as xgb
 data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather")
 
 
-per_position_capital = 10000
+per_position_security = 10000
 
 
 cash = 0.0
@@ -85,12 +85,12 @@ except Exception:
     ).rename(columns={'Close':'Buy_Price'})
 
 
-    day1holdingsmerge['Shares_Owned'] = (per_position_capital / day1holdingsmerge['Buy_Price']).fillna(0)
+    day1holdingsmerge['Shares_Owned'] = (per_position_security / day1holdingsmerge['Buy_Price']).fillna(0)
     day1holdingsmerge['Buy_Date'] = first_date
     day1holdingsmerge['current_price'] = day1holdingsmerge['Buy_Price']
     day1holdingsmerge = day1holdingsmerge[['Stock','Buy_Price','Shares_Owned','Buy_Date','current_price']]
 
-initial_capital = len(day1holdingsmerge) * per_position_capital
+initial_capital = len(day1holdingsmerge) * per_position_security
 
 
 for date in dates:
