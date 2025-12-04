@@ -1,0 +1,61 @@
+---
+title: "Untitled"
+format: html
+---
+
+
+
+```{python}
+import pandas as pd
+import xgboost as xgb
+import shap
+import joblib
+xgb_tuned = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/FinalBoostedOneDayClassifier.joblib")
+```
+
+```{python}
+train = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TrainData.feather")
+test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather")
+
+drop_cols = ['Date', 'Daily_Return',
+ 'next_day_pct_change',
+ 'next_5_day_pct_change',
+ 'Movement_5_day',
+ 'next_30_day_pct_change',
+ 'Movement_30_day',
+ 'Movement']
+
+X_train_raw = train.drop(drop_cols, axis=1)
+X_test_raw  = test.drop(drop_cols, axis=1)
+
+X_train_raw = pd.get_dummies(X_train_raw, drop_first=True)
+X_test_raw  = pd.get_dummies(X_test_raw, drop_first=True)
+
+
+X_train_final, X_test_final = X_train_raw.align(X_test_raw, join='left', axis=1)
+X_test_final = X_test_final.fillna(0)
+
+
+y_train_final = train['Movement'].astype(int)
+y_test_final  = test['Movement'].astype(int)
+
+dtrain = xgb.DMatrix(X_train_final, label=y_train_final)
+dtest  = xgb.DMatrix(X_test_final,  label=y_test_final)
+```
+
+```{python}
+# Create TreeExplainer and compute SHAP values
+explainer = shap.TreeExplainer(xgb_tuned)
+shap_values = explainer(X_train_final)
+```
+
+
+```{python}
+shap.initjs()
+shap.plots.beeswarm(shap_values, max_display=25) 
+```
+
+
+```{python}
+shap.plots.heatmap(shap_values[:200], max_display=25)
+```

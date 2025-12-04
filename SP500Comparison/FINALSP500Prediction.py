@@ -183,4 +183,3 @@ SP_500_initial = SP500_shares * SP500_startprice
 SP_500_finish = SP500_shares * sp500_endprice
 SP500_profit = SP_500_finish - SP500_capital 
 SP_500_total_return_pct = (SP500_profit/SP500_capital) * 100
-
