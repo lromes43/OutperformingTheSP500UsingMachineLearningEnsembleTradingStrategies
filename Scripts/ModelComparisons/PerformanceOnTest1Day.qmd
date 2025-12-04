@@ -189,6 +189,11 @@ one day rmse percent: 3.0429015834272217
 Within ±0.5% accuracy (in percentage points): 0.98
 
 
+```{python}
+from plotnine import *
+plot = (ggplot(merged_cont_one, aes(x = 'actual', y = 'Initial_Predicted')) + geom_point())
+```
+
 
 ```{python}
 import numpy as np
