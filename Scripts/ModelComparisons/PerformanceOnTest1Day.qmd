@@ -92,7 +92,7 @@ pred_final = (pred >=.5).astype(int)
 cm = confusion_matrix(actual, pred_final)
 finalboostedcm = ConfusionMatrixDisplay(confusion_matrix=cm)
 finalboostedcm.plot(cmap = "Blues")
-plt.title("Final Boosted Confusion Matrix")
+plt.title("Final One Day Binary Confusion Matrix")
 plt.show()
 final_boosted_acc = accuracy_score(actual, pred_final)
 print(final_boosted_acc)
@@ -108,6 +108,7 @@ merged_binary = pd.merge(pred_final_df, actual, how='inner', on='iteration')
 sorted_ticker_series = transformed_data['Ticker'].sort_values(ascending=True)
 merged_binary['ticker'] = sorted_ticker_series.reset_index(drop=True)
 merged_binary_one = merged_binary
+
 
 ```
 
@@ -181,10 +182,51 @@ close_accuracy = np.mean(np.abs(merged_cont_one ['actual'] - merged_cont_one ['I
 print(f"Within ±0.5% accuracy (in percentage points): {close_accuracy}")
 ```
 
-MSE: 4.1633584312570635
-MSE_percent: 416.33584312570633
- one day rmse: 2.040430942535685
-one day rmse percent: 204.04309425356848
-Within ±0.5% accuracy (in percentage points): 0.2434077079107505
+MSE: 0.0009259250046423894
+MSE_percent: 0.09259250046423895
+ one day rmse: 0.030429015834272218
+one day rmse percent: 3.0429015834272217
+Within ±0.5% accuracy (in percentage points): 0.98
+
+
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve, roc_auc_score
+
+
+y_true_binary = test['Movement'].astype(int) 
+
+
+probabilities = pred 
+
+
+auc_score = roc_auc_score(y_true_binary, probabilities)
+print(f"\nArea Under the Curve (AUC) for 1-Day Movement: {auc_score:.4f}")
+
+
+fpr, tpr, thresholds = roc_curve(y_true_binary, probabilities)
+
+
+plt.figure(figsize=(8, 6))
+
+plt.plot(fpr, tpr, color='navy', lw=2, label=f'ROC curve (AUC = {auc_score:.4f})')
+
+plt.plot([0, 1], [0, 1], color='black', lw=2, linestyle='--', label='Random Classifier')
+
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate (1 - Specificity)')
+plt.ylabel('True Positive Rate (Sensitivity/Recall)')
+plt.title('ROC Curve for 1-Day Movement Prediction')
+plt.legend(loc="lower right")
+plt.grid(True)
+plt.show()
+
+```
+
+
+
 
 

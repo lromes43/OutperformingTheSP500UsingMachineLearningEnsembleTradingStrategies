@@ -95,7 +95,7 @@ merged_binary_thirty = merged_binary
 ```
 
 
-Five Day Continuous
+thirty Day Continuous
 
 ```{python}
 X = test.drop(['Date',
@@ -132,16 +132,16 @@ merged = pd.merge(y_test_new, MAE_df, how = 'inner', on = 'iteration')
 merged['Initial_Predicted'] = merged['Initial_Predicted'] * 100 
 
 
-sorted_ticker_series = subset2['Ticker'].sort_values(ascending=True)
+sorted_ticker_series = test['Ticker'].sort_values(ascending=True)
 merged['ticker'] = sorted_ticker_series.reset_index(drop=True)
 merged_cont_thirty = merged 
-merged_cont_thirty = merged_cont_five.rename(columns = {'next_5_day_pct_change': 'actual'})
+merged_cont_thirty = merged_cont_thirty.rename(columns = {'next_30_day_pct_change': 'actual'})
 ```
 
 
 ```{python}
 
-squared_errors = (merged_cont_five['actual'] - merged_cont_five['Initial_Predicted']) ** 2
+squared_errors = (merged_cont_thirty ['actual'] - merged_cont_thirty['Initial_Predicted']) ** 2
 
 MSE = squared_errors.mean()
 MSE_percent = MSE * 100
@@ -157,14 +157,54 @@ print(f" one day rmse: {one_day_rmse}")
 print(f"one day rmse percent: {one_day_rmse_percent}")
 
 threshold = 0.5 
-close_accuracy = np.mean(np.abs(merged_cont_five ['actual'] - merged_cont_five['Initial_Predicted']) <= threshold)
+close_accuracy = np.mean(np.abs(merged_cont_thirty['actual'] - merged_cont_thirty ['Initial_Predicted']) <= threshold)
 print(f"Within ±0.5% accuracy (in percentage points): {close_accuracy}")
 ```
 
-MSE: 4.1633584312570635
-MSE_percent: 416.33584312570633
- one day rmse: 2.040430942535685
-one day rmse percent: 204.04309425356848
-Within ±0.5% accuracy (in percentage points): 0.2434077079107505
+MSE: 0.011510008088852445
+MSE_percent: 1.1510008088852446
+ one day rmse: 0.10728470575460626
+one day rmse percent: 10.728470575460626
+Within ±0.5% accuracy (in percentage points): 0.398052738336714
+
+
+
+
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve, roc_auc_score
+
+
+y_true_binary = test['Movement_30_day'].astype(int) 
+
+
+probabilities = pred 
+
+
+auc_score = roc_auc_score(y_true_binary, probabilities)
+print(f"\nArea Under the Curve (AUC) for 30-Day Movement: {auc_score:.4f}")
+
+
+fpr, tpr, thresholds = roc_curve(y_true_binary, probabilities)
+
+
+plt.figure(figsize=(8, 6))
+
+plt.plot(fpr, tpr, color='navy', lw=2, label=f'ROC curve (AUC = {auc_score:.4f})')
+
+plt.plot([0, 1], [0, 1], color='black', lw=2, linestyle='--', label='Random Classifier')
+
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate (1 - Specificity)')
+plt.ylabel('True Positive Rate (Sensitivity/Recall)')
+plt.title('ROC Curve for 30-Day Movement Prediction')
+plt.legend(loc="lower right")
+plt.grid(True)
+plt.show()
+
+```
 
 
