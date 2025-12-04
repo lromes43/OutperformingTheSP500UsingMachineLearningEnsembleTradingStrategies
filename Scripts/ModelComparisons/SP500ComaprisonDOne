@@ -1,7 +1,6 @@
 
    ```{python}
-cash = 0 
-
+cash = 0 # zero bc all was invested
 data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather")
 
 day1holdingsmerge = pd.merge(
@@ -15,6 +14,7 @@ day1holdingsmerge = pd.merge(
 day1holdingsmerge = day1holdingsmerge.rename(columns={'Close': 'Buy_Price'})
 day1holdingsmerge['Shares_Owned'] = 100000 / day1holdingsmerge['Buy_Price']
 day1holdingsmerge['Buy_Date'] = day1_buys['Date'].values
+initial_capital = len(day1holdingsmerge) * 100000
 
 date1 = day1holdingsmerge['Date'].iloc[0]
 current_prices = data[data['Date'] == date1][['Ticker', 'Close']]
@@ -120,26 +120,19 @@ for date in sorted(data['Date'].unique()):
         if ticker in merged['ticker'].values:
             continue
         else:
-            row = day1holdingsmerge.loc[
-            day1holdingsmerge['Stock'] == ticker,        
-            ['Stock', 'current_price', 'Shares_Owned']]
+            row = day1holdingsmerge.loc[day1holdingsmerge['Stock'] == ticker,['Stock', 'current_price', 'Shares_Owned']]
 
         removed_holdings = pd.concat([removed_holdings, row], ignore_index=True)
 
         cash += row['current_price'].iloc[0] * row['Shares_Owned'].iloc[0]
-        day1holdingsmerge = day1holdingsmerge[
-            day1holdingsmerge['Stock'] != ticker        
-        ].reset_index(drop=True)
+        day1holdingsmerge = day1holdingsmerge[day1holdingsmerge['Stock'] != ticker].reset_index(drop=True)
 
-        print("Removed holdings:\n", removed_holdings)
+        print("Removed holdings:", removed_holdings)
 
     for ticker in daily['ticker']:
         if ticker not in day1holdingsmerge['Stock'].values:
 
-            price = data[
-            (data['Date'] == date) &
-            (data['Ticker'] == ticker)
-            ]['Close'].iloc[0]
+            price = data[(data['Date'] == date) & (data['Ticker'] == ticker)]['Close'].iloc[0]
 
             shares_to_buy = cash / price if cash > 0 else 0
 
@@ -169,44 +162,39 @@ for date in sorted(data['Date'].unique()):
 
 
 
-
-```{python}
-
-latest_date = data['Date'].max()  
-current_prices = data[data['Date'] == latest_date][['Ticker', 'Close']]
-
-
-holdings_for_profit = day1holdingsmerge.rename(columns={'Stock': 'Ticker'})
-
-
-holdings_with_prices = pd.merge(
-    holdings_for_profit,
-    current_prices,
-    how='left',
-    on='Ticker'
-)
-
-
-holdings_with_prices['Profit'] = (holdings_with_prices['Close'] - holdings_with_prices['Buy_Price']) * holdings_with_prices['Shares_Owned']
-
-total_profit = holdings_with_prices['Profit'].sum()
-print("Total Profit:", total_profit)
-
-
-```
-
-
 ```{python}
 portfolio_value = (day1holdingsmerge['current_price'] * day1holdingsmerge['Shares_Owned']).sum() + cash
 
-total_invested = (day1holdingsmerge['Buy_Price'] * day1holdingsmerge['Shares_Owned']).sum() + 0  
+total_profit = portfolio_value - initial_capital
 
-total_profit = portfolio_value - total_invested
-print("Total Profit:", total_profit)
+total_return_pct = (total_profit / initial_capital) * 100
+
+print(f"Total Initial Investment: ${initial_capital:,.2f}")
+print(f"Current Portfolio Value: ${portfolio_value:,.2f}")
+print(f"Total Profit: ${total_profit:,.2f}")
+print(f"Total Return Percentage: {total_return_pct:,.2f}%")
 ```
-
-
 Compared to SP500 Baseline
 
 6448.26
 6849.72
+
+If i invested 1,000,000 into SP500
+
+```{python}
+
+SP500initial_price = 6448.26 
+SP500end_price = 6849.72
+initial_investment = 1000000
+
+SP500shares = initial_investment / 6448.26
+
+initial = SP500shares * SP500initial_price
+end = SP500shares * SP500end_price
+
+SP500_profit = end - initial
+SP500_return_pct = (SP500_profit / initial_investment ) *100
+
+print(f"SP500 profit: {SP500_profit}")
+print(f"SP500 return_pct : {SP500_return_pct}")
+```
