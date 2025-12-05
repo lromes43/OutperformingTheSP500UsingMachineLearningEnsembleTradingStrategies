@@ -64,7 +64,7 @@ finalboostedcm = ConfusionMatrixDisplay(confusion_matrix=cm)
 finalboostedcm.plot(cmap = "Blues")
 plt.title("Final One Day Binary Confusion Matrix")
 final_boosted_acc = accuracy_score(actual, pred_final)
-print(final_boosted_acc)
+print(f"Final Boosted Accuracy: {final_boosted_acc}")
 
 
 
@@ -80,7 +80,7 @@ merged_binary_one = merged_binary
 plt.show()
 ```
 
-    0.7325354969574036
+    Final Boosted Accuracy: 0.7325354969574036
 
 ![](readme_files/figure-commonmark/cell-3-output-2.png)
 
