@@ -1,0 +1,68 @@
+---
+title: "Untitled"
+format: html
+---
+
+
+```{python}
+import pandas as pd
+model_perf = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/modelovertime.csv")
+removed_holdings = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/removed_holdings.csv")
+trade_log = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/trade_log_df.csv")
+sp_prices = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/sp_prices.csv")
+```
+
+```{python}
+trade_log.loc[0, 'Cash_before'] = 100000
+import numpy as np
+future_merged = pd.merge(removed_holdings, trade_log, how= 'inner', left_on=['Stock', 'Shares_Owned'], right_on=['Ticker', 'Shares'])
+sp_prices['shares'] = 100000 / sp_prices['Close'].iloc[0]
+sp_prices['value'] = np.nan
+for i in range(0, len(sp_prices)):
+   sp_prices['value'].iloc[i] = sp_prices['shares'].iloc[0] * sp_prices['Close'].iloc[i]
+
+
+final_sp_future = sp_prices
+final_sp_future['Date'] = pd.to_datetime(final_sp_future['Date'])
+final_sp_future = final_sp_future[final_sp_future['Date'] <= '2025-11-07']
+
+```
+
+
+```{python}
+trade_log['Date'] = pd.to_datetime(trade_log['Date'])
+final_sp_future['Date'] = pd.to_datetime(final_sp_future['Date'])
+
+
+trade_log['label'] = 'Model Trading'
+final_sp_future['label'] = 'S&P 500 Baseline'
+
+from plotnine import *
+
+test_price_comparisons_plot = (
+    ggplot() +
+    geom_line(
+        trade_log,
+        aes(x='Date', y='Cash_before', color='label')
+    ) +
+    geom_line(
+        final_sp_future,
+        aes(x='Date', y='value', color='label')
+    ) +
+    scale_color_manual(values=['blue', 'red']) +
+    scale_x_datetime(date_breaks="3 days", date_labels="%Y-%m-%d") +
+    labs(
+        title="Model Trading vs SP500 During Testing Period",
+        x="Date",
+        y="Value",
+        color="Legend"
+    ) +
+    theme(
+        axis_text_x=element_text(rotation=45, hjust=1),
+        figure_size=(12, 6)
+    )
+)
+
+test_price_comparisons_plot
+
+```

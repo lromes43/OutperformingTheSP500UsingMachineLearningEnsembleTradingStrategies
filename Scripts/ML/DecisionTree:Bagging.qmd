@@ -72,6 +72,7 @@ Confusion Matrix
 cm = confusion_matrix(y_test, y_pred_final)
 disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels= le.classes_)
 disp.plot(cmap = "Blues")
+plt.title("Confusion Matrix for Initial Decison Tree")
 plt.show()
 ```
 
