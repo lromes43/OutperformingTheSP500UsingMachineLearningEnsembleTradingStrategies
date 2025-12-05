@@ -65,7 +65,6 @@ cm = confusion_matrix(actual, pred_final)
 finalboostedcm = ConfusionMatrixDisplay(confusion_matrix=cm)
 finalboostedcm.plot(cmap = "Blues")
 plt.title("Final One Day Binary Confusion Matrix")
-plt.show()
 final_boosted_acc = accuracy_score(actual, pred_final)
 print(final_boosted_acc)
 
@@ -80,11 +79,12 @@ merged_binary = pd.merge(pred_final_df, actual, how='inner', on='iteration')
 sorted_ticker_series = transformed_data['Ticker'].sort_values(ascending=True)
 merged_binary['ticker'] = sorted_ticker_series.reset_index(drop=True)
 merged_binary_one = merged_binary
+plt.show()
 ```
 
-![](readme_files/figure-commonmark/cell-3-output-1.png)
-
     0.7325354969574036
+
+![](readme_files/figure-commonmark/cell-3-output-2.png)
 
     hi
 
