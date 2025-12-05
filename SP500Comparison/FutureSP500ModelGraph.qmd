@@ -55,7 +55,7 @@ test_price_comparisons_plot = (
         final_sp_future,
         aes(x='Date', y='value', color='label')
     ) +
-    scale_color_manual(values=['blue', 'red']) +
+    scale_color_manual(values=['navy', 'dodgerblue']) +
     scale_x_datetime(date_breaks="3 days", date_labels="%Y-%m-%d") +
     labs(
         color='Legend',
