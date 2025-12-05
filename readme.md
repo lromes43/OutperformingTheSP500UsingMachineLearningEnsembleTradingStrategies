@@ -181,8 +181,377 @@ print(f"Within ±0.5% accuracy (in percentage points): {close_accuracy}")
     one day rmse percent: 3.0429015834272217
     Within ±0.5% accuracy (in percentage points): 0.98
 
-    hi
+The final objective that this model set out to accomplish was how well
+it performs in a trading environment. In this study a simulated trading
+environment was used with two different time periods, the testing period
+as well as a range of future dates which the model had not been trained
+nor previously been tested on. Testing dates for the simulation include
+September third, 2025 through November 7th 2025 while the new data
+includes November 11th, 2025 through November 26th, 2025.
+
+The architecture powering this simulation is quite simple as each model,
+the binary and continuous run and output results. A temporary table for
+each model is created to hold the results along with a dummy variable
+called “Buy” which is 1 if the model predicts future positive movement
+and 0 if the model does not. These temporary tables are then subsetted
+to only show instances where the buy column is equal to one and the two
+tables, temporary binary and temporary continuous are merged on date and
+ticker ensuring the final results are only stocks of which were
+predicted to go up by both models. Next, the final merged table is
+sorted based on predicted percent change and the top 10 stocks are
+extracted and evenly bought from the initial \$100,000 starting capital.
+This process then repeats for the remainder of the dates, but checks if
+each day’s predictions align with current holdings. If the predictions
+align with the current holdings, the model continues, if the current
+holdings do not match the model predictions, the current holdings are
+sold. The shares and selling price is extracted and added to a variable
+called cash which is then used to invest in new securities.
 
 ``` python
-import pandas as pd
+model_perf = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/modelovertime_future.csv")
+removed_holdings = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/removed_holdings_future.csv")
+trade_log = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/trade_log_df_future.csv")
+sp_final = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/sp500_final.csv")
+sp_prices = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/sp500closing.csv")
+trade_log.loc[0, 'Cash_before'] = 100000
+import numpy as np
+future_merged = pd.merge(removed_holdings, trade_log, how= 'inner', left_on=['Stock', 'Shares_Owned'], right_on=['Ticker', 'Shares'])
+future_merged = future_merged.drop('Unnamed: 0', axis = 1)
+sp_prices['shares'] = 100000 / sp_prices['Close'].iloc[0]
+sp_prices['value'] = np.nan
+for i in range(0, len(sp_prices)):
+    sp_prices['value'].iloc[i] = sp_prices['shares'].iloc[0] * sp_prices['Close'].iloc[i]
+
+
+final_sp_future = sp_prices
+final_sp_future['Date'] = pd.to_datetime(final_sp_future['Date'])
+final_sp_future = final_sp_future[final_sp_future['Date'] >= '2025-11-12']
+final_sp_future = final_sp_future[final_sp_future['Date'] <= '2025-11-26']
+trade_log['Date'] = pd.to_datetime(trade_log['Date'])
+from plotnine import *
+future_price_comparisons_plot = (ggplot(trade_log, aes(x = 'Date', 
+                                                        y = 'Cash_before'))+ geom_line()+ geom_line(final_sp_future, aes(x ='Date',y = 'value' ), color = 'red'))
+trade_log['label'] = 'Model Trading'
+final_sp_future['label'] = 'S&P 500 Baseline'
+
+test_price_comparisons_plot = (
+    ggplot() +
+    geom_line(
+        trade_log,
+        aes(x='Date', y='Cash_before', color='label')
+    ) +
+    geom_line(
+        final_sp_future,
+        aes(x='Date', y='value', color='label')
+    ) +
+    scale_color_manual(values=['navy', 'dodgerblue']) +
+    scale_x_datetime(date_breaks="3 days", date_labels="%Y-%m-%d") +
+    labs(
+        color='Legend',
+        y='Value',
+        title='Model Trading vs SP500 During Future Period'
+    ) +
+    theme(
+        axis_text_x=element_text(rotation=45, hjust=1),
+        figure_size=(12, 6)
+    )
+)
+
+test_price_comparisons_plot
 ```
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: FutureWarning: ChainedAssignmentError: behaviour will change in pandas 3.0!
+    You are setting values through chained assignment. Currently this works in certain cases, but when using Copy-on-Write (which will become the default behaviour in pandas 3.0) this will never work to update the original DataFrame or Series, because the intermediate object on which we are setting values will behave as a copy.
+    A typical example is when you are setting values in a column of a DataFrame, like:
+
+    df["col"][row_indexer] = value
+
+    Use `df.loc[row_indexer, "col"] = values` instead, to perform the assignment in a single step and ensure this keeps updating the original `df`.
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+    /var/folders/lp/fvcz3h757rsbs75hmtcsjv640000gn/T/ipykernel_35926/223468380.py:13: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+
+<img src="readme_files/figure-commonmark/cell-7-output-2.png"
+width="576" height="288" />
+
+``` python
+print(future_merged)
+```
+
+      Stock   Sell_Date  Sell_Price  Shares_Owned       Proceeds     sell_value  \
+    0  GEHC  2025-11-13   73.699997   1085.481727   80000.000000   80000.000000   
+    1  SOLV  2025-11-14   73.510002   1362.052423  100124.476529  100124.476529   
+    2  AMAT  2025-11-18  223.761387    492.371724  110173.779582  110173.779582   
+    3  AMCR  2025-11-19    8.440000  13053.766002  110173.779582  110173.779582   
+    4  AMTM  2025-11-20   21.750000   5065.461130  110173.779582  110173.779582   
+    5  GEHC  2025-11-21   73.129997   1506.547022  110173.779582  110173.779582   
+    6    MU  2025-11-25  213.410004    538.668069  114957.154669  114957.154669   
+    7  AMTM  2025-11-26   28.350000   4054.926036  114957.154669  114957.154669   
+
+      Action_x        Date Ticker Action_y       Price        Shares  \
+    0     Sell  2025-11-12   GEHC      BUY   73.699997   1085.481727   
+    1     Sell  2025-11-13   SOLV      BUY   73.510002   1362.052423   
+    2     Sell  2025-11-14   AMAT      BUY  203.351394    492.371724   
+    3     Sell  2025-11-18   AMCR      BUY    8.440000  13053.766002   
+    4     Sell  2025-11-19   AMTM      BUY   21.750000   5065.461130   
+    5     Sell  2025-11-20   GEHC      BUY   73.129997   1506.547022   
+    6     Sell  2025-11-21     MU      BUY  204.529999    538.668069   
+    7     Sell  2025-11-25   AMTM      BUY   28.350000   4054.926036   
+
+         Cash_before  
+    0  100000.000000  
+    1  100124.476529  
+    2  100124.476529  
+    3  110173.779582  
+    4  110173.779582  
+    5  110173.779582  
+    6  110173.779582  
+    7  114957.154669  
+
+Simulation two consisting of unseen future dates not included in either
+test nor train outperformed the SP500 as well. The model resulted in a
+14.958% return compared to -0.29% return that the SP500 returned during
+the same time period. During this simulation, the model purchases 18
+securities and sells 9.
