@@ -37,6 +37,8 @@ def binary_preprocessing(date, file_path, predictor):
     merged_binary['buy'] = merged_binary['actual_up'].apply(lambda x: 1 if x == 1 else 0)
     return merged_binary[merged_binary['buy'] == 1].copy()
 
+
+
 def cont_preprocessing(date, file_path, predictor):
     continuousone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/ContinuousOneDayFinal.joblib")
     df = pd.read_feather(file_path)

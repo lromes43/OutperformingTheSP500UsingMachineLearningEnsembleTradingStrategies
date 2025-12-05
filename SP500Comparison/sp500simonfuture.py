@@ -1,11 +1,10 @@
 import pandas as pd
 import joblib
 import xgboost as xgb
-from datetime import datetime
 
 
 data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/ModelFuturePerformanceDataCleaned.feather")
-data['Date'] = data['Date'].dt.date
+
 
 per_position_security = 10000
 
@@ -37,6 +36,7 @@ def binary_preprocessing(date, file_path, predictor):
     merged_binary['ticker'] = subset['Ticker'].sort_values().reset_index(drop=True)
     merged_binary['buy'] = merged_binary['actual_up'].apply(lambda x: 1 if x == 1 else 0)
     return merged_binary[merged_binary['buy'] == 1].copy()
+
 
 
 def cont_preprocessing(date, file_path, predictor):
@@ -98,8 +98,8 @@ initial_capital = len(day1holdingsmerge) * per_position_security
 for date in dates:
 
 
-    binary = binary_preprocessing(date, "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather", "Movement")
-    cont = cont_preprocessing(date, "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather", "next_day_pct_change")
+    binary = binary_preprocessing(date, "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/ModelFuturePerformanceDataCleaned.feather", "Movement")
+    cont = cont_preprocessing(date, "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/ModelFuturePerformanceDataCleaned.feather", "next_day_pct_change")
     merged = pd.merge(binary, cont, on=['iteration','ticker','buy'])
     merged = merged.sort_values("Initial_Predicted", ascending=False)
     daily = merged.head(10)
@@ -168,14 +168,14 @@ print(f"Number of buys recorded:  {len(trade_log)}")
 
 
 
-#removed_holdings.to_csv('/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/removed_holdings.csv', index=False)
+removed_holdings.to_csv('/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/removed_holdings.csv', index=False)
 
 trade_log_df = pd.DataFrame(trade_log)
 trade_log_df.to_csv('/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/trade_log_df.csv', index = False)
 
 #Comparing Model to SP500
 
-#sp500table = pd.read_html("https://finance.yahoo.com/quote/%5EGSPC/history/")[1] #getting to mahy request did i break the API lol
+sp500table = pd.read_html("https://finance.yahoo.com/quote/%5EGSPC/history/")[1] #getting to mahy request did i break the API lol
 SP500_startprice = 6415.54
 sp500_endprice = 6486.61
 
