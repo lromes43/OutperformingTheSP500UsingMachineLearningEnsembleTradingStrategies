@@ -106,8 +106,7 @@ plt.show()
 
 Preparing Data For Continuous Model and Running continuous model.
 ```{python}
-#| echo: false
-#| eval: false
+
 X = test.drop(['Date',
     'next_day_pct_change','next_5_day_pct_change',
     'Movement_5_day','next_30_day_pct_change',
@@ -144,8 +143,6 @@ merged_cont_one = merged
 
 Continuous Model Results
 ```{python}
-#| echo: false
-#| eval: false
 squared_errors = (merged_cont_one ['actual'] - merged_cont_one ['Initial_Predicted']) ** 2
 
 MSE = squared_errors.mean()
