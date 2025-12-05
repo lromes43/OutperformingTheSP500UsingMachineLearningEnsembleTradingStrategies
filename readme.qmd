@@ -106,6 +106,8 @@ plt.show()
 
 Preparing Data For Continuous Model and Running continuous model.
 ```{python}
+#| message: false
+#| warning: false
 
 X = test.drop(['Date',
     'next_day_pct_change','next_5_day_pct_change',
@@ -143,6 +145,8 @@ merged_cont_one = merged
 
 Continuous Model Results
 ```{python}
+#| message: false
+#| warning: false
 squared_errors = (merged_cont_one ['actual'] - merged_cont_one ['Initial_Predicted']) ** 2
 
 MSE = squared_errors.mean()
@@ -170,6 +174,8 @@ The architecture powering this simulation is quite simple as each model, the bin
 
 
 ```{python}
+#| message: false
+#| warning: false
 model_perf = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/modelovertime_future.csv")
 removed_holdings = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/removed_holdings_future.csv")
 trade_log = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/trade_log_df_future.csv")
@@ -228,6 +234,8 @@ print(future_merged)
 ```
 
 Simulation two consisting of unseen future dates not included in either test nor train outperformed the SP500 as well. The model resulted in a 14.958% return compared to -0.29% return that the SP500 returned during the same time period. During this simulation, the model purchases 18 securities and sells 9.
+
+
 
 
 
