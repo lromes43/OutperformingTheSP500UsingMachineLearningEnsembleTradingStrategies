@@ -86,6 +86,39 @@ plt.show()
 
 ![](readme_files/figure-commonmark/cell-3-output-2.png)
 
+Creating and Plotting ROC Curve
+
+``` python
+y_true_binary = test['Movement'].astype(int) 
+probabilities = pred 
+auc_score = roc_auc_score(y_true_binary, probabilities)
+print(f"\nArea Under the Curve (AUC) for 1-Day Movement: {auc_score:.4f}")
+fpr, tpr, thresholds = roc_curve(y_true_binary, probabilities)
+plt.figure(figsize=(8, 6))
+
+plt.plot(fpr, tpr, color='navy', lw=2, label=f'ROC curve (AUC = {auc_score:.4f})')
+
+plt.plot([0, 1], [0, 1], color='black', lw=2, linestyle='--', label='Random Classifier')
+
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate (1 - Specificity)')
+plt.ylabel('True Positive Rate (Sensitivity/Recall)')
+plt.title('ROC Curve for 1-Day Movement Prediction')
+plt.legend(loc="lower right")
+plt.grid(True)
+plt.show()
+```
+
+
+    Area Under the Curve (AUC) for 1-Day Movement: 0.8163
+
+![](readme_files/figure-commonmark/cell-4-output-2.png)
+
+Preparing Data For Continuous Model and Running continuous model.
+
+Continuous Model Results
+
     hi
 
 ``` python
