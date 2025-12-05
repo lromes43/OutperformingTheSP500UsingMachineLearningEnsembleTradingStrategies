@@ -38,11 +38,8 @@ merged = pd.merge(data, VIX_df, how = 'inner', on = 'Date')
 ```{python}
 vix_series = merged['VIX']
 
-# 2. Drop the original 'VIX' column
 merged = merged.drop(columns=['VIX'])
 
-# 3. Insert the column back at the desired location (index 26)
-# loc=26: The integer position where the column is inserted.
 merged.insert(loc=26, column='VIX', value=vix_series)
 merged.to_feather('/Users/lukeromes/Desktop/Personal/Sp500Project/Data/ModelFuturePerformanceDataCleaned.feather')
 ```

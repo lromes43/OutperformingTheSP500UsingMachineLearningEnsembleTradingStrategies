@@ -44,7 +44,7 @@ dtest  = xgb.DMatrix(X_test_final,  label=y_test_final)
 ```
 
 ```{python}
-# Create TreeExplainer and compute SHAP values
+
 explainer = shap.TreeExplainer(xgb_tuned)
 shap_values = explainer(X_train_final)
 ```

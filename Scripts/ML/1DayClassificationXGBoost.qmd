@@ -516,7 +516,7 @@ final_boosted_acc = accuracy_score(y_test_final, test_pred_classification)
 print(final_boosted_acc)
 ```
 
-Getting an .
+
 
 ```{python}
 import joblib

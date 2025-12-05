@@ -50,7 +50,7 @@ def initial_data_loading(length, frequency):
             data = yf.download(ticker, period="length", interval="frequency", progress=False)
             
             if data.empty:
-                print(f"⚠️ No data for {ticker} (Possible delisting/missing data).")
+                print(f"No data for {ticker} (Possible delisting/missing data).")
                 continue
             
             data.to_csv(file_path)
@@ -94,7 +94,7 @@ def initial_data_loading(length, frequency):
         final_df.to_csv("combined_sp500_yearly_data.csv")
         
         
-        print(f"✅ Successfully combined {file_count} CSVs.")
+        print(f"Successfully combined {file_count} CSVs.")
         print(f"Data saved to: {COMBINED_FILE}")
         print(f"Total rows in combined file: {len(final_df)}")
     else:
@@ -610,21 +610,19 @@ def train_test_split_by_date(data_path, train_end_date, test_start_date):
     """
     data = pd.read_feather(data_path)
     
-    # 1. Ensure the 'Date' column is a proper datetime object
-    # The error message indicates it is already UTC-aware (e.g., datetime64[ns, UTC])
+   
     data['Date'] = pd.to_datetime(data['Date']) 
     data = data.sort_values(by=['Ticker', 'Date'])
 
-    # 2. Convert comparison dates to timezone-aware UTC objects (THE FIX)
-    # The .tz_localize('UTC') method makes the naive date UTC-aware.
+   
     train_end_date = pd.to_datetime(train_end_date).tz_localize('UTC')
     test_start_date = pd.to_datetime(test_start_date).tz_localize('UTC')
 
-    # 3. Perform the comparison
+
     train_subset = data[data['Date'] <= train_end_date]
     test_subset = data[data['Date'] >= test_start_date]
 
-    # Save to feather
+    
     train_subset.to_feather("TrainData.feather")
     test_subset.to_feather("TestData.feather")
 

@@ -548,7 +548,7 @@ dtest = xgb.DMatrix(X_final, label = actual)
 ```{python}
 binaryone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/FinalBoostedOneDayClassifier.joblib")
 
-# Print the feature names and their required order
+
 required_features = binaryone.feature_names
 print("--- Required Feature Order ---")
 for i, feature in enumerate(required_features):
