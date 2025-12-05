@@ -76,6 +76,7 @@ hist_data = hist_data[hist_data['Date'] >= '2025-09-04']
 
 ```{python}
 combined_data2 = hist_data.groupby('Date')[['Close']].sum().reset_index()
+combined_data2.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/sp_prices.csv")
 ```
 
 

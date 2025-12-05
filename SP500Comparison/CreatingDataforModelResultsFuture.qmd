@@ -6,33 +6,34 @@ format: html
 
 ```{python}
 import pandas as pd
-removed_holdings = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/removed_holdings.csv")
-trade_log = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/trade_log_df.csv")
+removed_holdings_future = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/removed_holdings_future.csv")
+trade_log_future = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/trade_log_df_future.csv")
 ```
 
 
 ```{python}
 import numpy as np
-trade_log['buy_value'] = np.nan
-for i in range(0, len(trade_log)):
-    trade_log['buy_value'].iloc[i] = trade_log['Price'].iloc[i] * trade_log['Shares'].iloc[i]
+trade_log_future['buy_value'] = np.nan
+for i in range(0, len(trade_log_future)):
+    trade_log_future['buy_value'].iloc[i] = trade_log_future['Price'].iloc[i] * removed_holdings_future['Shares_Owned'].iloc[i]
 ```
 
 
 ```{python}
 import numpy as np
-removed_holdings['sell_value'] = np.nan
-for i in range(0, len(removed_holdings)):
-    removed_holdings['sell_value'].iloc[i] = removed_holdings['Sell_Price'].iloc[i] * removed_holdings['Shares_Owned'].iloc[i]
+removed_holdings_future['sell_value'] = np.nan
+for i in range(0, len(removed_holdings_future)):
+    removed_holdings_future['sell_value'].iloc[i] = removed_holdings_future['Sell_Price'].iloc[i] * removed_holdings_future['Shares_Owned'].iloc[i]
 ```
 
 
 ```{python}
-removed_holdings['Action'] = 'Sell'
+removed_holdings_future['Action'] = 'Sell'
+removed_holdings_future.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/removed_holdings_future.csv")
 ```
 
 ```{python}
-merged = pd.merge(removed_holdings, trade_log, how = 'inner', left_on=['Stock', 'Shares_Owned'], right_on= ['Ticker', 'Shares'])
+merged = pd.merge(removed_holdings_future, trade_log_future, how = 'inner', left_on=['Stock', 'Shares_Owned'], right_on= ['Ticker', 'Shares'])
 ```
 
 ```{python}
@@ -46,11 +47,12 @@ value_df_result = combined_data[['Sell_Date', 'Value']].rename(columns={'Sell_Da
 
 value_df_result = value_df_result.rename(columns={'Value':'change'})
 value_df_result['Date'] = pd.to_datetime(value_df_result['Date'])
+value_df_result_future = value_df_result
 
 ```
 
 ```{python}
-value_df_result.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/modelovertime.csv", index=False)
+value_df_result_future.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/modelovertime_future.csv", index=False)
 ```
 
 SP500 over time
@@ -70,12 +72,13 @@ hist_data['Date'] = hist_data['Date'].dt.date
 
 hist_data = hist_data[['Date', 'Close']]
 hist_data['Date'] = pd.to_datetime(hist_data['Date'])
-hist_data = hist_data[hist_data['Date'] >= '2025-09-04']
+hist_data = hist_data[hist_data['Date'] >= '2025-11-10']
 
 ```
 
 ```{python}
 combined_data2 = hist_data.groupby('Date')[['Close']].sum().reset_index()
+combined_data2.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/sp500closing.csv")
 ```
 
 
@@ -88,7 +91,7 @@ for i in range(0, len(combined_data2 )):
     elif i >0: 
         combined_data2 ['change'].iloc[i] = (combined_data2 ['Close'].iloc[i] - combined_data2 ['Close'].iloc[i-1]) / combined_data2 ['Close'].iloc[i-1] * 100
 sp500_final = combined_data2 [['Date', 'change']]
-sp500_final.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/sp500_final.csv", index=False)
+sp500_final.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/sp500_future.csv", index=False)
 ```
 
 

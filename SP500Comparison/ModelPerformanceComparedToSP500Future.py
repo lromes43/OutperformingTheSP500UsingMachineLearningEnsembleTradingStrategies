@@ -166,18 +166,20 @@ print(f"Total return:            {total_return_pct:.2f}%")
 print(f"Number of sells recorded: {len(removed_holdings)}")
 print(f"Number of buys recorded:  {len(trade_log)}")
 
+#my return % 14.957%
 
 
-removed_holdings.to_csv('/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/removed_holdings.csv', index=False)
+
+removed_holdings.to_csv('/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/removed_holdings_future.csv', index=False)
 
 trade_log_df = pd.DataFrame(trade_log)
-trade_log_df.to_csv('/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/trade_log_df.csv', index = False)
+trade_log_df.to_csv('/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/trade_log_df_future.csv', index = False)
 
 #Comparing Model to SP500
 
 sp500table = pd.read_html("https://finance.yahoo.com/quote/%5EGSPC/history/")[1] #getting to mahy request did i break the API lol
-SP500_startprice = 6415.54
-sp500_endprice = 6486.61
+SP500_startprice = 6486.61
+sp500_endprice = 6489.09
 
 SP500_capital = 100000
 SP500_shares = SP500_capital / SP500_startprice
@@ -185,3 +187,5 @@ SP_500_initial = SP500_shares * SP500_startprice
 SP_500_finish = SP500_shares * sp500_endprice
 SP500_profit = SP_500_finish - SP500_capital 
 SP_500_total_return_pct = (SP500_profit/SP500_capital) * 100
+
+#SP500 return % .038%
