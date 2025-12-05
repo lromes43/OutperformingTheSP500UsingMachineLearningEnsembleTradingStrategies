@@ -3,13 +3,13 @@ import joblib
 import xgboost as xgb
 
 
-data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather")
+data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/ModelFuturePerformanceDataCleaned.feather")
 
 
 per_position_security = 10000
 
 
-cash = 0.0
+cash = 0
 removed_holdings = pd.DataFrame(columns=['Stock','Sell_Date','Sell_Price','Shares_Owned','Proceeds'])
 trade_log = []  
 
@@ -73,8 +73,8 @@ try:
     if day1holdingsmerge.empty:
         raise NameError
 except Exception:
-    b1 = binary_preprocessing(first_date, "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather", "Movement")
-    c1 = cont_preprocessing(first_date, "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather", "next_day_pct_change")
+    b1 = binary_preprocessing(first_date, "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/ModelFuturePerformanceDataCleaned.feather", "Movement")
+    c1 = cont_preprocessing(first_date, "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/ModelFuturePerformanceDataCleaned.feather", "next_day_pct_change")
     d1 = pd.merge(b1, c1, on=['iteration','ticker','buy']).sort_values("Initial_Predicted", ascending=False).head(10)
 
     prices_day1 = data[data['Date'] == first_date][['Ticker','Close']]
@@ -98,8 +98,8 @@ initial_capital = len(day1holdingsmerge) * per_position_security
 for date in dates:
 
 
-    binary = binary_preprocessing(date, "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather", "Movement")
-    cont = cont_preprocessing(date, "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather", "next_day_pct_change")
+    binary = binary_preprocessing(date, "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/ModelFuturePerformanceDataCleaned.feather", "Movement")
+    cont = cont_preprocessing(date, "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/ModelFuturePerformanceDataCleaned.feather", "next_day_pct_change")
     merged = pd.merge(binary, cont, on=['iteration','ticker','buy'])
     merged = merged.sort_values("Initial_Predicted", ascending=False)
     daily = merged.head(10)
