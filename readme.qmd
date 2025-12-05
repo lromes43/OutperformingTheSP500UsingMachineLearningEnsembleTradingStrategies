@@ -1,5 +1,5 @@
 ---
-title: "Optimizing Stock Market Performance Using Ensemble Approaches of Machine Learning"
+title: "Optimizing Stock Market Performance Using ML Ensemble Models"
 format: gfm
 ---
 
@@ -35,7 +35,7 @@ binaryone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/F
 continuousone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/ContinuousOneDayFinal.job.lib")
 ```
 
-Preparing the Data for the One-Day Binary Classifier and running the model
+### Preparing the Data for the One-Day Binary Classifier and running the model
 
 ```{python}
 import pandas as pd
@@ -80,7 +80,7 @@ plt.show()
 ```
 
 
-Creating and Plotting ROC Curve
+### Creating and Plotting ROC Curve
 ```{python}
 y_true_binary = test['Movement'].astype(int) 
 probabilities = pred 
@@ -104,7 +104,7 @@ plt.show()
 
 ```
 
-Preparing Data For Continuous Model and Running continuous model.
+### Preparing Data For Continuous Model and Running continuous model.
 ```{python}
 #| message: false
 #| warning: false
@@ -143,7 +143,7 @@ merged['ticker'] = sorted_ticker_series.reset_index(drop=True)
 merged_cont_one = merged 
 ```
 
-Continuous Model Results
+### Continuous Model Results
 ```{python}
 #| message: false
 #| warning: false
@@ -171,7 +171,7 @@ The final objective that this model set out to accomplish was how well it perfor
 
 The architecture powering this simulation is quite simple as each model, the binary and continuous run and output results. A temporary table for each model is created to hold the results along with a dummy variable called “Buy” which is 1 if the model predicts future positive movement and 0 if the model does not. These temporary tables are then subsetted to only show instances where the buy column is equal to one and the two tables, temporary binary and temporary continuous are merged on date and ticker ensuring the final results are only stocks of which were predicted to go up by both models. Next, the final merged table is sorted based on predicted percent change and the top 10 stocks are extracted and evenly bought from the initial $100,000 starting capital. This process then repeats for the remainder of the dates, but checks if each day's predictions align with current holdings. If the predictions align with the current holdings, the model continues, if the current holdings do not match the model predictions, the current holdings are sold. The shares and selling price is extracted and added to a variable called cash which is then used to invest in new securities.
 
-
+### Trading Simulation Results vs SP500
 
 ```{python}
 #| message: false

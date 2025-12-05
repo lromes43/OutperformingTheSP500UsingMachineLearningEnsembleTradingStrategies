@@ -1,5 +1,4 @@
-# Optimizing Stock Market Performance Using Ensemble Approaches of
-Machine Learning
+# Optimizing Stock Market Performance Using ML Ensemble Models
 
 
 ## Introduction
@@ -38,8 +37,7 @@ binaryone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/F
 continuousone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/ContinuousOneDayFinal.job.lib")
 ```
 
-Preparing the Data for the One-Day Binary Classifier and running the
-model
+### Preparing the Data for the One-Day Binary Classifier and running the model
 
 ``` python
 import pandas as pd
@@ -86,7 +84,7 @@ plt.show()
 
 ![](readme_files/figure-commonmark/cell-3-output-2.png)
 
-Creating and Plotting ROC Curve
+### Creating and Plotting ROC Curve
 
 ``` python
 y_true_binary = test['Movement'].astype(int) 
@@ -115,7 +113,7 @@ plt.show()
 
 ![](readme_files/figure-commonmark/cell-4-output-2.png)
 
-Preparing Data For Continuous Model and Running continuous model.
+### Preparing Data For Continuous Model and Running continuous model.
 
 ``` python
 X = test.drop(['Date',
@@ -152,7 +150,7 @@ merged['ticker'] = sorted_ticker_series.reset_index(drop=True)
 merged_cont_one = merged 
 ```
 
-Continuous Model Results
+### Continuous Model Results
 
 ``` python
 squared_errors = (merged_cont_one ['actual'] - merged_cont_one ['Initial_Predicted']) ** 2
@@ -206,6 +204,8 @@ align with the current holdings, the model continues, if the current
 holdings do not match the model predictions, the current holdings are
 sold. The shares and selling price is extracted and added to a variable
 called cash which is then used to invest in new securities.
+
+### Trading Simulation Results vs SP500
 
 ``` python
 model_perf = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/modelovertime_future.csv")
