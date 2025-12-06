@@ -342,3 +342,14 @@ Simulation two consisting of unseen future dates outpreformed the SP500.
 The model resulted in a 14.958% return compared to -0.29% return that
 the SP500 returned during the same time period. During this simulation,
 the model purchases 18 securities and sells 9.
+
+## Next Steps
+
+Retrain this model and prepare for it to go live, in the functions
+folder save each function that has been created and implement the
+creating derived vars func, initial data loading func, and train test
+split func into an ETL pipeline. Save the remaining two functions,
+binary preprocessing func, and cont preprocessing func and turn those
+into one function which automatically transforms the data into its final
+input form for the model, runs the models, and saves the results. I hope
+to have these tasks done by Dec 20th, 2025.
