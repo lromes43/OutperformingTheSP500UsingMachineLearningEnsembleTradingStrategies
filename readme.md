@@ -82,62 +82,6 @@ scripts output the results and model performance.
 
 ![](readme_files/figure-commonmark/cell-5-output-2.png)
 
-``` python
-X = test.drop(['Date',
-    'next_day_pct_change','next_5_day_pct_change',
-    'Movement_5_day','next_30_day_pct_change',
-    'Movement_30_day','Movement'
-], axis=1)
-
-if 'Date' in X.columns:
-    X['Date'] = pd.to_datetime(X['Date']).view('int64')
-
-
-X_raw = pd.get_dummies(X, drop_first=True)
-
-required_features = continuousone.feature_names
-X_final = X_raw.reindex(columns=required_features, fill_value=0)
-
-X_final = X_final.apply(pd.to_numeric, errors='coerce').fillna(0)
-y_final = test['next_day_pct_change'].astype(float)
-
-dtest = xgb.DMatrix(X_final)
-y_pred_one = continuousone.predict(dtest)
-y_test_new = y_final.reset_index()
-y_test_new = y_test_new.reset_index().drop('index', axis =1).rename(columns = {'level_0':'iteration', 'next_day_pct_change': 'actual'})
-MAE_df = pd.DataFrame(y_pred_one).reset_index().rename(columns = {'index': 'iteration', 0 : 'Initial_Predicted'})
-merged = pd.merge(y_test_new, MAE_df, how = 'inner', on = 'iteration')
-
-
-merged['Initial_Predicted'] = merged['Initial_Predicted'] * 100 
-
-
-sorted_ticker_series = transformed_data['Ticker'].sort_values(ascending=True)
-merged['ticker'] = sorted_ticker_series.reset_index(drop=True)
-merged_cont_one = merged 
-```
-
-``` python
-squared_errors = (merged_cont_one ['actual'] - merged_cont_one ['Initial_Predicted']) ** 2
-
-MSE = squared_errors.mean()
-MSE_percent = MSE * 100
-
-print(f"MSE: {MSE}")
-print(f"MSE_percent: {MSE_percent}")
-
-
-one_day_rmse = np.sqrt(MSE) 
-one_day_rmse_percent = one_day_rmse * 100
-
-print(f" one day rmse: {one_day_rmse}")
-print(f"one day rmse percent: {one_day_rmse_percent}")
-
-threshold = 0.5 
-close_accuracy = np.mean(np.abs(merged_cont_one ['actual'] - merged_cont_one ['Initial_Predicted']) <= threshold)
-print(f"Within ±0.5% accuracy (in percentage points): {close_accuracy}")
-```
-
     MSE: 0.0009259250046423894
     MSE_percent: 0.09259250046423895
      one day rmse: 0.030429015834272218

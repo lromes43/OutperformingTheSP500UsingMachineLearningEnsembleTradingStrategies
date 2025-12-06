@@ -125,7 +125,7 @@ plt.show()
 ```{python}
 #| message: false
 #| warning: false
-#| #| echo: false
+#| echo: false
 
 X = test.drop(['Date',
     'next_day_pct_change','next_5_day_pct_change',
@@ -165,7 +165,7 @@ merged_cont_one = merged
 ```{python}
 #| message: false
 #| warning: false
-#| #| echo: false
+#| echo: false
 squared_errors = (merged_cont_one ['actual'] - merged_cont_one ['Initial_Predicted']) ** 2
 
 MSE = squared_errors.mean()
