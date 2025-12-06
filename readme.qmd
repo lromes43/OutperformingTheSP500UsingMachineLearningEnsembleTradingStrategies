@@ -59,6 +59,7 @@ continuousone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Mode
 
 ```{python}
 #| echo: false
+#| output: false
 drop_cols = ['Date', 'next_day_pct_change','Daily_Return',
  'next_5_day_pct_change',
  'Movement_5_day',
@@ -93,12 +94,12 @@ merged_binary = pd.merge(pred_final_df, actual, how='inner', on='iteration')
 sorted_ticker_series = transformed_data['Ticker'].sort_values(ascending=True)
 merged_binary['ticker'] = sorted_ticker_series.reset_index(drop=True)
 merged_binary_one = merged_binary
-plt.show()
 
 ```
 
 ```{python}
 #| echo: false
+#| output: false
 #| fig-show: hide 
 y_true_binary = test['Movement'].astype(int) 
 probabilities = pred 
@@ -118,7 +119,6 @@ plt.ylabel('True Positive Rate (Sensitivity/Recall)')
 plt.title('ROC Curve for 1-Day Movement Prediction')
 plt.legend(loc="lower right")
 plt.grid(True)
-plt.show()
 
 ```
 

@@ -73,15 +73,6 @@ OR 30)Day scripts. These were the original scipts that were created
 before functions were created. A benefit to this method is that these
 scripts output the results and model performance.
 
-    Final Boosted Accuracy: 0.7325354969574036
-
-![](readme_files/figure-commonmark/cell-4-output-2.png)
-
-
-    Area Under the Curve (AUC) for 1-Day Movement: 0.8163
-
-![](readme_files/figure-commonmark/cell-5-output-2.png)
-
 ## Model Simulation vs Real Data
 
 The final objective that this model set out to accomplish was how well
