@@ -124,6 +124,7 @@ plt.show()
 
 ```{python}
 #| echo: false
+#| output: false
 #| message: false
 #| warning: false
 
@@ -165,6 +166,7 @@ merged_cont_one = merged
 
 ```{python}
 #| echo: false
+#| output: false
 #| message: false
 #| warning: false
 squared_errors = (merged_cont_one ['actual'] - merged_cont_one ['Initial_Predicted']) ** 2

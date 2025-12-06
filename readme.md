@@ -82,12 +82,6 @@ scripts output the results and model performance.
 
 ![](readme_files/figure-commonmark/cell-5-output-2.png)
 
-    MSE: 0.0009259250046423894
-    MSE_percent: 0.09259250046423895
-     one day rmse: 0.030429015834272218
-    one day rmse percent: 3.0429015834272217
-    Within ±0.5% accuracy (in percentage points): 0.98
-
 ## Model Simulation vs Real Data
 
 The final objective that this model set out to accomplish was how well
