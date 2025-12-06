@@ -99,6 +99,7 @@ plt.show()
 
 ```{python}
 #| echo: false
+#| fig-show: hide 
 y_true_binary = test['Movement'].astype(int) 
 probabilities = pred 
 auc_score = roc_auc_score(y_true_binary, probabilities)
@@ -169,6 +170,7 @@ merged_cont_one = merged
 #| output: false
 #| message: false
 #| warning: false
+#| fig-show: hide 
 squared_errors = (merged_cont_one ['actual'] - merged_cont_one ['Initial_Predicted']) ** 2
 
 MSE = squared_errors.mean()
