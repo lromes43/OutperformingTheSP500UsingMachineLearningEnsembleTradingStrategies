@@ -3,12 +3,20 @@ title: "Optimizing Stock Market Performance Using ML Ensemble Models"
 format: gfm
 ---
 
-## Introduction
+# Introduction
 
-The outcome of this project is multi-fold, the goal is to predict if a stock will go up or down in the future across different time horizons and by what percent will the future stock price increase or decrease. The success of the model will be determined by not only its ability to correctly predict price movements but also its ability to act on them. This will be done by the model acting as a hedge fund manager of a financial firm trying to outperform the SP500 baseline.
+The outcome of this project is multi-fold, the goal is to predict if a stock will go up or down in the future across different time horizons (1, 5 and 30 Days) and by what percent will the future stock price increase or decrease. The success of the model will be determined by not only its ability to correctly predict price movements but also its ability to act on them. This will be done by the model acting as a hedge fund manager of a financial firm trying to outperform the SP500 baseline.
+
+# Outcome
+
+This model consistently outpreforms the SP500 on a multitude of different range of dates. From September 2nd to November 11th, this model achieved a 35% return compared to the SP500 return of 3%. To test its effectiveness on future dates not included in the model, this model achieved a 14% return from November 12 through November 28th compared to the SP500 return of -0.29%. See graphs at the end. of this document as well as the Trading Framework Architecture included in the SP500 Comparsion subfolder.
 
 
 ## Code 
+
+### Importing Necessary Libraries and Data that was transformed via the data pipeline (see Data Loading Scripts for pipeline and functions)
+
+Data used was pulled directly from yahoo finance API (yfinance). Pulled data included every SP500 stock from November 10th, 2024 through November 11th, 2025. Initial variables pulled included:(Date, Price, Close, High, Low, Open, Volume, Ticker). These first initial features were included so the model would be able to uniquely identify each stock and its corresponding price via the composite key of Ticker and Date. The initial eight variables were expanded upon resulting in a total of 46 variables (6 output, 40 input). This data was then exported to a feather file to improve performance due to its binary, columnar format allowing for faster processing speeds and reduced storage needs.
 
 ```{python}
 
@@ -35,12 +43,11 @@ binaryone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/F
 continuousone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/ContinuousOneDayFinal.job.lib")
 ```
 
-### Preparing the Data for the One-Day Binary Classifier and running the model
+### Preparing the Data for the One-Day Binary Classifier and Running the Model!
+
+Getting the data in its final form and ready to be inputted into the Binary-One-Day Model. After data is ready, model is ran, confusion matrix printed and resulting model results stored in a new dataframe called merged_binary.
 
 ```{python}
-import pandas as pd
-import xgboost as xgb
-
 drop_cols = ['Date', 'next_day_pct_change','Daily_Return',
  'next_5_day_pct_change',
  'Movement_5_day',
@@ -104,7 +111,13 @@ plt.show()
 
 ```
 
-### Preparing Data For Continuous Model and Running continuous model.
+Achieve an AUC of .816.
+
+
+### Preparing the Data for the Continuous Model and Running the Model!
+
+Getting the data in its final form and ready to be inputted into the Continuous Model. After data is ready, model is ran, MAE is calculated and set aside. Results from the model stored in a dataframe called merged_cont_one.
+
 ```{python}
 #| message: false
 #| warning: false
@@ -144,6 +157,9 @@ merged_cont_one = merged
 ```
 
 ### Continuous Model Results
+
+Model One Results
+
 ```{python}
 #| message: false
 #| warning: false
@@ -167,11 +183,13 @@ close_accuracy = np.mean(np.abs(merged_cont_one ['actual'] - merged_cont_one ['I
 print(f"Within ±0.5% accuracy (in percentage points): {close_accuracy}")
 ```
 
-The final objective that this model set out to accomplish was how well it performs in a trading environment. In this study a simulated trading environment was used with two different time periods, the testing period as well as a range of future dates which the model had not been trained nor previously been tested on. Testing dates for the simulation include September third, 2025 through November 7th 2025 while the new data includes November 11th, 2025 through November 26th, 2025.
+The final objective that this model set out to accomplish was how well it performs in a trading environment. In this study a simulated trading environment was used with two different time periods, the testing period as well as a range of future dates which the model had not been trained nor previously been tested on. Testing dates for the simulation include September 3rd, 2025 through November 7th 2025 while the new data includes November 11th, 2025 through November 26th, 2025.
 
-The architecture powering this simulation is quite simple as each model, the binary and continuous run and output results. A temporary table for each model is created to hold the results along with a dummy variable called “Buy” which is 1 if the model predicts future positive movement and 0 if the model does not. These temporary tables are then subsetted to only show instances where the buy column is equal to one and the two tables, temporary binary and temporary continuous are merged on date and ticker ensuring the final results are only stocks of which were predicted to go up by both models. Next, the final merged table is sorted based on predicted percent change and the top 10 stocks are extracted and evenly bought from the initial $100,000 starting capital. This process then repeats for the remainder of the dates, but checks if each day's predictions align with current holdings. If the predictions align with the current holdings, the model continues, if the current holdings do not match the model predictions, the current holdings are sold. The shares and selling price is extracted and added to a variable called cash which is then used to invest in new securities.
+The architecture powering this simulation is quite simple as each model, the binary and continuous run  simulateneously and output and store their results. A temporary table for each model is created to hold the results along with a dummy variable called “Buy” which is 1 if the model predicts future positive movement and 0 if the model does not. These temporary tables are then subsetted to only show instances where the buy column is equal to one and the two tables, temporary binary and temporary continuous are merged on date and ticker ensuring the final results are only stocks of which were predicted to go up by both models. Next, the final merged table is sorted based on predicted percent change and the top 10 stocks are extracted and evenly bought from the initial $100,000 starting capital. This process then repeats for the remainder of the dates, but checks if each day's predictions align with current holdings. If the predictions align with the current holdings, the model continues, if the current holdings do not match the model predictions, the current holdings are sold. The shares and selling price is extracted and added to a variable called cash which is then used to invest in new securities. (Detailed Diagram can be found in SP500 Comparison Subsection)
 
 ### Trading Simulation Results vs SP500
+
+Here I am showing the model results on future data Nov 11th - Nov 26th 2025.
 
 ```{python}
 #| message: false
@@ -233,7 +251,7 @@ test_price_comparisons_plot
 print(future_merged)
 ```
 
-Simulation two consisting of unseen future dates not included in either test nor train outperformed the SP500 as well. The model resulted in a 14.958% return compared to -0.29% return that the SP500 returned during the same time period. During this simulation, the model purchases 18 securities and sells 9.
+Simulation two consisting of unseen future dates outpreformed the SP500. The model resulted in a 14.958% return compared to -0.29% return that the SP500 returned during the same time period. During this simulation, the model purchases 18 securities and sells 9.
 
 
 
