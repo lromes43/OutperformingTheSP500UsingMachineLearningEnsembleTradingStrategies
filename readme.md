@@ -23,9 +23,7 @@ the SP500 return of -0.29%. See graphs at the end. of this document as
 well as the Trading Framework Architecture included in the SP500
 Comparsion subfolder.
 
-## Code
-
-### Importing Necessary Libraries and Data that was transformed via the data pipeline (see Data Loading Scripts for pipeline and functions)
+## Data
 
 Data used was pulled directly from yahoo finance API (yfinance). Pulled
 data included every SP500 stock from November 10th, 2024 through
@@ -36,118 +34,53 @@ and its corresponding price via the composite key of Ticker and Date.
 The initial eight variables were expanded upon resulting in a total of
 46 variables (6 output, 40 input). This data was then exported to a
 feather file to improve performance due to its binary, columnar format
-allowing for faster processing speeds and reduced storage needs.
+allowing for faster processing speeds and reduced storage needs. You can
+find the final data to run this in the data subfolder entitled
+“CORRECTEDFINALDATA.feather”. Additionally you can use the scripts
+within the DataLoadingScripts folder (work in progress in turning into a
+full pipeline) which calls the yfinance API to retrieve the data,
+transforms it by creating additional derived variables, and implements a
+train test split.
+
+## Machine Learning Models
+
+Machine learning models are pretrained and saved in the Models subfolder
+as .joblib files. To utilize this you must do below, and replace the
+file path with your desired model. Additionally you may recreate or
+retrain the models that I have created which can be found in the ML
+subfolder within the Scripts subfolder. These scripts are saved as qmd,
+allowing for them to be run cell by cell.
 
 ``` python
-import pandas as pd
 import joblib
-import pandas as pd 
-import numpy as np   
-from plotnine import *  
-import xgboost as xgb 
-from sklearn.model_selection import StratifiedShuffleSplit
-from sklearn.impute import SimpleImputer
-from sklearn.metrics import (
-    accuracy_score, log_loss, roc_auc_score, confusion_matrix, classification_report, ConfusionMatrixDisplay, f1_score
-)
-from sklearn.model_selection import ParameterGrid
-from tqdm import tqdm 
-import matplotlib.pyplot as plt
-import shap
-from sklearn.metrics import roc_curve, roc_auc_score
-from sklearn.preprocessing import StandardScaler
-test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather")
-transformed_data = test
 binaryone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/FinalBoostedOneDayClassifier.joblib")
-continuousone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/ContinuousOneDayFinal.job.lib")
 ```
 
-### Preparing the Data for the One-Day Binary Classifier and Running the Model!
+## Running the Machine Learning Models
 
-Getting the data in its final form and ready to be inputted into the
-Binary-One-Day Model. After data is ready, model is ran, confusion
-matrix printed and resulting model results stored in a new dataframe
-called merged_binary.
+In order to run the models you have two options: utilize the predefined
+functions found in the functions subfolder entitled
+“binary_preprocessing_func” and “cont_preprocessing_func” which
+transform the derived variable data into the final input form needed to
+be understood by the models and executes and saves the results. Both of
+these models require three arguments: “date”: the date which you want to
+predict, “file_path” where is the derived variables data being pulled
+from, and “Predictor” is trying to be predicted.
 
-``` python
-drop_cols = ['Date', 'next_day_pct_change','Daily_Return',
- 'next_5_day_pct_change',
- 'Movement_5_day',
- 'next_30_day_pct_change',
- 'Movement_30_day',
- 'Movement']
-
-X = test.drop(drop_cols, axis = 1)
-X_final = pd.get_dummies(X, drop_first=True)
-actual = test['Movement'].astype(int)
-
-dtest = xgb.DMatrix(X_final, label = actual)
-
-pred = binaryone.predict(dtest)
-pred_final = (pred >=.5).astype(int)
-
-cm = confusion_matrix(actual, pred_final)
-finalboostedcm = ConfusionMatrixDisplay(confusion_matrix=cm)
-finalboostedcm.plot(cmap = "Blues")
-plt.title("Final One Day Binary Confusion Matrix")
-final_boosted_acc = accuracy_score(actual, pred_final)
-print(f"Final Boosted Accuracy: {final_boosted_acc}")
-
-
-
-
-
-pred_final_df = pd.DataFrame(pred_final)
-pred_final_df = pred_final_df.reset_index().rename(columns={'index': 'iteration', 0: 'actual up/down'})
-actual = actual.reset_index().rename(columns={'index': 'iteration'})
-merged_binary = pd.merge(pred_final_df, actual, how='inner', on='iteration')
-sorted_ticker_series = transformed_data['Ticker'].sort_values(ascending=True)
-merged_binary['ticker'] = sorted_ticker_series.reset_index(drop=True)
-merged_binary_one = merged_binary
-plt.show()
-```
+The second option involves going to the “Model Comparions” subfolder
+with the “Scripts” subfolder and running the PerformanceOnTest( 1 OR 5
+OR 30)Day scripts. These were the original scipts that were created
+before functions were created. A benefit to this method is that these
+scripts output the results and model performance.
 
     Final Boosted Accuracy: 0.7325354969574036
 
-![](readme_files/figure-commonmark/cell-3-output-2.png)
-
-### Creating and Plotting ROC Curve
-
-``` python
-y_true_binary = test['Movement'].astype(int) 
-probabilities = pred 
-auc_score = roc_auc_score(y_true_binary, probabilities)
-print(f"\nArea Under the Curve (AUC) for 1-Day Movement: {auc_score:.4f}")
-fpr, tpr, thresholds = roc_curve(y_true_binary, probabilities)
-plt.figure(figsize=(8, 6))
-
-plt.plot(fpr, tpr, color='navy', lw=2, label=f'ROC curve (AUC = {auc_score:.4f})')
-
-plt.plot([0, 1], [0, 1], color='black', lw=2, linestyle='--', label='Random Classifier')
-
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 1.05])
-plt.xlabel('False Positive Rate (1 - Specificity)')
-plt.ylabel('True Positive Rate (Sensitivity/Recall)')
-plt.title('ROC Curve for 1-Day Movement Prediction')
-plt.legend(loc="lower right")
-plt.grid(True)
-plt.show()
-```
+![](readme_files/figure-commonmark/cell-4-output-2.png)
 
 
     Area Under the Curve (AUC) for 1-Day Movement: 0.8163
 
-![](readme_files/figure-commonmark/cell-4-output-2.png)
-
-Achieve an AUC of .816.
-
-### Preparing the Data for the Continuous Model and Running the Model!
-
-Getting the data in its final form and ready to be inputted into the
-Continuous Model. After data is ready, model is ran, MAE is calculated
-and set aside. Results from the model stored in a dataframe called
-merged_cont_one.
+![](readme_files/figure-commonmark/cell-5-output-2.png)
 
 ``` python
 X = test.drop(['Date',
@@ -184,10 +117,6 @@ merged['ticker'] = sorted_ticker_series.reset_index(drop=True)
 merged_cont_one = merged 
 ```
 
-### Continuous Model Results
-
-Model One Results
-
 ``` python
 squared_errors = (merged_cont_one ['actual'] - merged_cont_one ['Initial_Predicted']) ** 2
 
@@ -214,6 +143,8 @@ print(f"Within ±0.5% accuracy (in percentage points): {close_accuracy}")
      one day rmse: 0.030429015834272218
     one day rmse percent: 3.0429015834272217
     Within ±0.5% accuracy (in percentage points): 0.98
+
+## Model Simulation vs Real Data
 
 The final objective that this model set out to accomplish was how well
 it performs in a trading environment. In this study a simulated trading
@@ -242,6 +173,16 @@ the current holdings are sold. The shares and selling price is extracted
 and added to a variable called cash which is then used to invest in new
 securities. (Detailed Diagram can be found in SP500 Comparison
 Subsection)
+
+To accomplish this proceed to the SP500 Comparison subfolder.First open
+the “SP500 Comparsion subfolder” and open
+ModelPerformanceComparedToSp500Test, this scrript will run a
+“simulation” as described above and buy and sell stocks using pretend
+capital. Once this is finished running open the
+CreatingDataforModelResultsFuture (again working on making more
+streamlined), this will transform the results of the model to a
+plottable format as well as pull the SP500 prices from the same days
+allowing for the model performance to truly be evaluated.
 
 ### Trading Simulation Results vs SP500
 
@@ -301,7 +242,7 @@ test_price_comparisons_plot = (
 test_price_comparisons_plot
 ```
 
-<img src="readme_files/figure-commonmark/cell-7-output-1.png"
+<img src="readme_files/figure-commonmark/cell-8-output-1.png"
 width="576" height="288" />
 
 ``` python
@@ -345,11 +286,17 @@ the model purchases 18 securities and sells 9.
 
 ## Next Steps
 
-Retrain this model and prepare for it to go live, in the functions
-folder save each function that has been created and implement the
-creating derived vars func, initial data loading func, and train test
-split func into an ETL pipeline. Save the remaining two functions,
-binary preprocessing func, and cont preprocessing func and turn those
-into one function which automatically transforms the data into its final
-input form for the model, runs the models, and saves the results. I hope
-to have these tasks done by Dec 20th, 2025.
+Retrain this model and prepare for it to go live.
+
+In the functions folder save each function that has been created and
+implement the creating derived vars func, initial data loading func, and
+train test split func into an ETL pipeline. This will eliminate the need
+for the data subfolder. The results will still be outputted as a pickle
+file to improve preformance, but will not need to physically live on the
+device.
+
+Save the remaining two functions, binary preprocessing func, and cont
+preprocessing func and turn those into one function which automatically
+transforms the data into its final input form for the model, runs the
+models, and saves the results. I hope to have these tasks done by Dec
+20th, 2025.

@@ -12,14 +12,27 @@ The outcome of this project is multi-fold, the goal is to predict if a stock wil
 This model consistently outpreforms the SP500 on a multitude of different range of dates. From September 2nd to November 11th, this model achieved a 35% return compared to the SP500 return of 3%. To test its effectiveness on future dates not included in the model, this model achieved a 14% return from November 12 through November 28th compared to the SP500 return of -0.29%. See graphs at the end. of this document as well as the Trading Framework Architecture included in the SP500 Comparsion subfolder.
 
 
-## Code 
+## Data 
 
-### Importing Necessary Libraries and Data that was transformed via the data pipeline (see Data Loading Scripts for pipeline and functions)
+Data used was pulled directly from yahoo finance API (yfinance). Pulled data included every SP500 stock from November 10th, 2024 through November 11th, 2025. Initial variables pulled included:(Date, Price, Close, High, Low, Open, Volume, Ticker). These first initial features were included so the model would be able to uniquely identify each stock and its corresponding price via the composite key of Ticker and Date. The initial eight variables were expanded upon resulting in a total of 46 variables (6 output, 40 input). This data was then exported to a feather file to improve performance due to its binary, columnar format allowing for faster processing speeds and reduced storage needs. You can find the final data to run this in the data subfolder entitled "CORRECTEDFINALDATA.feather". Additionally you can use the scripts within the DataLoadingScripts folder (work in progress in turning into a full pipeline) which calls the yfinance API to retrieve the data, transforms it by creating additional derived variables, and implements a train test split.
 
-Data used was pulled directly from yahoo finance API (yfinance). Pulled data included every SP500 stock from November 10th, 2024 through November 11th, 2025. Initial variables pulled included:(Date, Price, Close, High, Low, Open, Volume, Ticker). These first initial features were included so the model would be able to uniquely identify each stock and its corresponding price via the composite key of Ticker and Date. The initial eight variables were expanded upon resulting in a total of 46 variables (6 output, 40 input). This data was then exported to a feather file to improve performance due to its binary, columnar format allowing for faster processing speeds and reduced storage needs.
+## Machine Learning Models
+
+Machine learning models are pretrained and saved in the Models subfolder as .joblib files. To utilize this you must do below, and replace the file path with your desired model. Additionally you may recreate or retrain the models that I have created which can be found in the ML subfolder within the Scripts subfolder. These scripts are saved as qmd, allowing for them to be run cell by cell.
 
 ```{python}
+import joblib
+binaryone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/FinalBoostedOneDayClassifier.joblib")
+```
 
+## Running the Machine Learning Models
+
+In order to run the models you have two options: utilize the predefined functions found in the functions subfolder entitled "binary_preprocessing_func" and "cont_preprocessing_func" which transform the derived variable data into the final input form needed to be understood by the models and executes and saves the results. Both of these models require three arguments: "date": the date which you want to predict, "file_path" where is the derived variables data being pulled from, and "Predictor" is trying to be predicted. 
+
+The second option involves going to the "Model Comparions" subfolder with the "Scripts" subfolder and running the PerformanceOnTest( 1 OR 5 OR 30)Day scripts. These were the original scipts that were created before functions were created. A benefit to this method is that these scripts output the results and model performance.
+
+```{python}
+#| echo: false
 import pandas as pd
 import joblib
 import pandas as pd 
@@ -43,11 +56,9 @@ binaryone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/F
 continuousone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/ContinuousOneDayFinal.job.lib")
 ```
 
-### Preparing the Data for the One-Day Binary Classifier and Running the Model!
-
-Getting the data in its final form and ready to be inputted into the Binary-One-Day Model. After data is ready, model is ran, confusion matrix printed and resulting model results stored in a new dataframe called merged_binary.
 
 ```{python}
+#| echo: false
 drop_cols = ['Date', 'next_day_pct_change','Daily_Return',
  'next_5_day_pct_change',
  'Movement_5_day',
@@ -86,9 +97,8 @@ plt.show()
 
 ```
 
-
-### Creating and Plotting ROC Curve
 ```{python}
+#| echo: false
 y_true_binary = test['Movement'].astype(int) 
 probabilities = pred 
 auc_score = roc_auc_score(y_true_binary, probabilities)
@@ -111,16 +121,11 @@ plt.show()
 
 ```
 
-Achieve an AUC of .816.
-
-
-### Preparing the Data for the Continuous Model and Running the Model!
-
-Getting the data in its final form and ready to be inputted into the Continuous Model. After data is ready, model is ran, MAE is calculated and set aside. Results from the model stored in a dataframe called merged_cont_one.
 
 ```{python}
 #| message: false
 #| warning: false
+#| #| echo: false
 
 X = test.drop(['Date',
     'next_day_pct_change','next_5_day_pct_change',
@@ -156,13 +161,11 @@ merged['ticker'] = sorted_ticker_series.reset_index(drop=True)
 merged_cont_one = merged 
 ```
 
-### Continuous Model Results
-
-Model One Results
 
 ```{python}
 #| message: false
 #| warning: false
+#| #| echo: false
 squared_errors = (merged_cont_one ['actual'] - merged_cont_one ['Initial_Predicted']) ** 2
 
 MSE = squared_errors.mean()
@@ -183,9 +186,15 @@ close_accuracy = np.mean(np.abs(merged_cont_one ['actual'] - merged_cont_one ['I
 print(f"Within ±0.5% accuracy (in percentage points): {close_accuracy}")
 ```
 
+
+## Model Simulation vs Real Data
+
 The final objective that this model set out to accomplish was how well it performs in a trading environment. In this study a simulated trading environment was used with two different time periods, the testing period as well as a range of future dates which the model had not been trained nor previously been tested on. Testing dates for the simulation include September 3rd, 2025 through November 7th 2025 while the new data includes November 11th, 2025 through November 26th, 2025.
 
 The architecture powering this simulation is quite simple as each model, the binary and continuous run  simulateneously and output and store their results. A temporary table for each model is created to hold the results along with a dummy variable called “Buy” which is 1 if the model predicts future positive movement and 0 if the model does not. These temporary tables are then subsetted to only show instances where the buy column is equal to one and the two tables, temporary binary and temporary continuous are merged on date and ticker ensuring the final results are only stocks of which were predicted to go up by both models. Next, the final merged table is sorted based on predicted percent change and the top 10 stocks are extracted and evenly bought from the initial $100,000 starting capital. This process then repeats for the remainder of the dates, but checks if each day's predictions align with current holdings. If the predictions align with the current holdings, the model continues, if the current holdings do not match the model predictions, the current holdings are sold. The shares and selling price is extracted and added to a variable called cash which is then used to invest in new securities. (Detailed Diagram can be found in SP500 Comparison Subsection)
+
+To accomplish this proceed to the SP500 Comparison subfolder.First open the "SP500 Comparsion subfolder" and open ModelPerformanceComparedToSp500Test, this scrript will run a "simulation" as described above and buy and sell stocks using pretend capital. Once this is finished running open the CreatingDataforModelResultsFuture (again working on making more streamlined), this will transform the results of the model to a plottable format as well as pull the SP500 prices from the same days allowing for the model performance to truly be evaluated.
+
 
 ### Trading Simulation Results vs SP500
 
@@ -257,7 +266,11 @@ Simulation two consisting of unseen future dates outpreformed the SP500. The mod
 
 ## Next Steps
 
-Retrain this model and prepare for it to go live, in the functions folder save each function that has been created and implement the creating derived vars func, initial data loading func, and train test split func into an ETL pipeline. Save the remaining two functions, binary preprocessing func, and cont preprocessing func and turn those into one function which automatically transforms the data into its final input form for the model, runs the models, and saves the results. I hope to have these tasks done by Dec 20th, 2025. 
+Retrain this model and prepare for it to go live. 
+
+In the functions folder save each function that has been created and implement the creating derived vars func, initial data loading func, and train test split func into an ETL pipeline. This will eliminate the need for the data subfolder. The results will still be outputted as a pickle file to improve preformance, but will not need to physically live on the device.
+
+Save the remaining two functions, binary preprocessing func, and cont preprocessing func and turn those into one function which automatically transforms the data into its final input form for the model, runs the models, and saves the results. I hope to have these tasks done by Dec 20th, 2025. 
 
 
 
