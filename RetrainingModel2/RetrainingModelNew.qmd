@@ -19,11 +19,14 @@ import matplotlib.pyplot as plt
 import shap
 from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.preprocessing import StandardScaler
+from datetime import date
 ```
 
 
+
 ```{python}
-data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/CORRECTEDFINALDATA.feather")
+data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/CHECKFEATHER.feather")
+data['Date'] = data['Date'].dt.date
 ```
 
 Just fitting model no test
@@ -118,9 +121,9 @@ best_error = float(tuned_boosted_cv.loc[best_index, 'test-error-mean'])
 best_auc = float(tuned_boosted_cv.loc[best_index, 'test-auc-mean'])
 ```
 
-Best Iteration: 982
-Best Error: 0.209
-Best AUC: 0.8788
+Best Iteration: 26
+Best Error: 0.4606
+Best AUC: 0.5486
 
 Final Test Error Mean Plot for initial Boost
 
@@ -155,8 +158,8 @@ Tuning max depth and child weight
 
 ```{python}
 params_new = {
-    "max_depth": [3,7,10],
-    "min_child_weight":[5,7,10]
+    "max_depth": np.arange(1, 10, 1),
+    "min_child_weight":np.arange(1, 10, 1)
 }
 
 
@@ -188,7 +191,7 @@ for md in params_new["max_depth"]:
         additional_tuning_cv = xgb.cv(
             params = params,
             dtrain = dtrain,
-            num_boost_round = 982,
+            num_boost_round = 26,
             nfold = 5, 
             early_stopping_rounds = 20,
             stratified = True,
@@ -225,8 +228,9 @@ Tuning Gamma
 
 
 ```{python}
+import numpy as np
 gamma_results = []
-gamma = [0.00001, 0.001, 0.05, 0.1, .15, .2, .3]
+gamma = np.arange(0.00001, .1, .002)
 params = {
     "objective": 'binary:logistic',
     "eta": .1,
@@ -245,7 +249,7 @@ for g in gamma:
     optimalgammaboost = xgb.cv(
         params= new_params,
         dtrain = dtrain,
-        num_boost_round = 838,
+        num_boost_round = 26,
         nfold = 5, 
         early_stopping_rounds = 20, 
         stratified = True,
@@ -274,10 +278,10 @@ best_gamma = float(gamma_df.iloc[0]['gamma'])
 Best parameters so far:
 
 ```{python}
-num_boost_rounds = 838
-best_gamma = .1
+num_boost_rounds = 26
+best_gamma = 0.026010000000000002
 tuned_depth = 7
-tuned_min_child_weight = 10
+tuned_min_child_weight = 2
 
 
 params = {
@@ -296,14 +300,11 @@ params = {
 Subsample and colsample_bytree tuning
 ```{python}
 additional_params = {
-    "subsample":[.4, .5, .6, .7, .8, .9, 1],
-    "colsample_bytree":[.4, .5, .6, .7, .8, .9, 1]
+    "subsample":np.arange(0.01, 1, .002),
+    "colsample_bytree":np.arange(0.01, 1, .002)
 }
-pos = y_train_final.sum()                   # number of 1s
-neg = len(y_train_final) - pos              # number of 0s
-scale_pos_weight = neg / pos                # ratio
 
-params["scale_pos_weight"] = scale_pos_weight
+
 
 
 tuned_subsamples_results = []
