@@ -2,6 +2,7 @@
 title: "Optimizing Stock Market Performance Using ML Ensemble Models"
 format: gfm
 ---
+# Please reach out to me at romesluke@gmail.com for model access. 
 
 # Introduction
 

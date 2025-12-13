@@ -1,0 +1,587 @@
+---
+title: "Untitled"
+format: html
+---
+
+```{python}
+import pandas as pd 
+import numpy as np   
+from plotnine import *  
+import xgboost as xgb 
+from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.impute import SimpleImputer
+from sklearn.metrics import (
+    accuracy_score, log_loss, roc_auc_score, confusion_matrix, classification_report, ConfusionMatrixDisplay, f1_score
+)
+from sklearn.model_selection import ParameterGrid
+from tqdm import tqdm 
+import matplotlib.pyplot as plt
+import shap
+from sklearn.metrics import roc_curve, roc_auc_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import r2_score
+```
+
+
+```{python}
+train = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TrainData.feather")
+test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather")
+```
+
+
+
+
+```{python}
+X_train_raw = train.drop([
+    'Daily_Return','next_day_pct_change','next_5_day_pct_change',
+    'Movement_5_day','next_30_day_pct_change','Movement_30_day','Movement'
+], axis=1)
+
+X_train_raw = pd.get_dummies(X_train_raw, drop_first=True)
+
+X_train_final = X_train_raw.apply(pd.to_numeric, errors='coerce').fillna(0)
+
+y_train_final = train['next_5_day_pct_change'].astype(float)
+
+dtrain = xgb.DMatrix(X_train_final, label=y_train_final)
+
+
+
+
+test_clean = test.dropna(subset=['next_5_day_pct_change']).copy()
+
+X_test_raw = test_clean.drop([
+    'Daily_Return','next_day_pct_change','next_5_day_pct_change',
+    'Movement_5_day','next_30_day_pct_change','Movement_30_day','Movement'
+], axis=1)
+
+X_test_raw = pd.get_dummies(X_test_raw, drop_first=True)
+X_test_raw = X_test_raw.reindex(columns=X_train_raw.columns, fill_value=0)
+
+X_test_final = X_test_raw.apply(pd.to_numeric, errors='coerce').fillna(0)
+
+y_test_final = test_clean['next_5_day_pct_change'].astype(float)
+
+dtest = xgb.DMatrix(X_test_final, label=y_test_final)
+
+```
+
+5 Day Prediction Initial Model
+
+```{python}
+params = {
+   'objective': 'reg:squarederror',
+   'eval_metric': 'rmse'
+}
+num_rounds = 1000
+five_day_change_model = xgb.train(params, dtrain, num_rounds)
+y_pred_five = five_day_change_model.predict(dtest)
+
+
+```
+
+Merging Data
+
+```{python}
+y_test_new = y_test_final.reset_index()
+y_test_new = y_test_new.reset_index().drop('index', axis =1).rename(columns = {'level_0':'iteration', 'next_30_day_pct_change': 'actual'})
+
+
+
+MAE_df = pd.DataFrame(y_pred_one).reset_index().rename(columns = {'index': 'iteration', 0 : 'Initial_Predicted'})
+merged = pd.merge(y_test_new, MAE_df, how = 'inner', on = 'iteration')
+merged = merged.rename(columns = {'next_5_day_pct_change':'actual'})
+```
+
+```{python}
+y_test_new = y_test_final.reset_index()
+MAE_df = pd.DataFrame(y_pred_five).reset_index()
+merged_MAE_df = pd.merge(y_test_new, MAE_df, how = 'inner', on = 'index')
+merged_MAE_df = merged_MAE_df.drop('index', axis = 1)
+merged_MAE_df.columns = ['Actual', 'Predicted']
+merged_MAE_df['diff'] = merged_MAE_df['Actual'] - merged_MAE_df['Predicted']
+merged_MAE_df_five = merged_MAE_df
+```
+
+
+Initial Model Accuracy Calc
+
+MAE
+```{python}
+error = []
+for i in range(0, len(merged_MAE_df+1)):
+    diff = float(merged_MAE_df_five ['Actual'].iloc[i] - merged_MAE_df_five ['Predicted'].iloc[i])
+    error.append(diff)
+    MAE = (1/len(merged_MAE_df_five )) * sum(abs(merged_MAE_df_five ['Actual'] - merged_MAE_df_five ['Predicted']))
+
+print(f"MAE for 5 Day Change: {MAE}")
+```
+
+MAE for five day change: 0.0362487
+
+MSE
+
+1/n * sum(actual - predicted)^2
+
+```{python}
+error = []
+for i in range(0, len(merged_MAE_df_five +1)):
+    diff = float(merged_MAE_df_five ['Actual'].iloc[i] - merged_MAE_df_five ['Predicted'].iloc[i]) **2
+    error.append(diff)
+    MSE = (1/len(merged_MAE_df_five )) * sum(error)
+```
+
+MSE for five day change: 0.002617
+
+RMSE
+
+sqrt(mse)
+
+```{python}
+five_day_rmse = mse**.5
+```
+
+
+R-Squared
+
+R^2 =  1 - SSR/SST
+
+```{python}
+r_squared_5_Day = r2_score(merged_MAE_df_five ['Actual'],merged_MAE_df_five ['Predicted'])
+```
+
+R-Squared for 5 day: -0.31898
+
+
+```{python}
+threshold = 0.005
+close_accuracy = np.mean(np.abs(y_pred_five - y_test_final) <= threshold)
+print("Within ±0.5% accuracy:", close_accuracy)
+
+```
+
+To the nearest .5% change in price I have 11.6655% accuracy.
+
+
+Tuning Optimal iterations then plotting RMSE vs iterations
+
+```{python}
+params = {
+   'objective': 'reg:squarederror',
+   'eval_metric': 'rmse'
+}
+
+num_rounds = 1000
+
+all_preds = []
+for i in range(1, num_rounds + 1):
+    pred_i = five_day_change_model.predict(dtest, iteration_range=(0, i))
+    all_preds.append(pred_i)
+
+```
+
+
+```{python}
+test = pd.DataFrame(all_preds)
+test2 = test.T
+test2 = test2.reset_index()
+
+ytest_df = pd.DataFrame(y_test_final).reset_index().reset_index().drop('index', axis = 1).rename(columns = {'level_0':'iteration', 'next_day_pct_change': 'actual'})
+test2 = test2.rename(columns = {'index': 'iteration'})
+FiveDayChangeMerged = pd.merge(test2,ytest_df , how = 'left', on = 'iteration' )
+
+```
+
+```{python}
+rmse_dict = {}
+
+for col in FiveDayChangeMerged .columns:
+    if col not in ['iteration', 'actual']:
+        errors = FiveDayChangeMerged[col] - FiveDayChangeMerged['actual']
+        rmse = (errors**2).mean()**0.5
+        rmse_dict[col] = rmse
+
+
+rmse_df = pd.DataFrame({
+    'iteration': list(rmse_dict.keys()),
+    'rmse': list(rmse_dict.values())
+})
+```
+
+Optimal iteration Plot, Iteration vs RMSE
+
+See a sharp drop then dramatic increase, going with iteration value of 8
+```{python}
+Iteration_plot = (ggplot(rmse_df, aes(x = 'iteration', 
+                                      y = 'rmse')) + 
+                                      geom_line())
+Iteration_plot
+```
+
+
+```{python}
+best_iteration = rmse_df['rmse'].idxmin()
+rmse_df[200:250].idxmin()
+best_iteration = int(rmse_df.iloc[229][0])
+```
+
+Tuning Max Depth and Child Weight
+
+```{python}
+params_new = {
+    "max_depth": [3,7,10],
+    "min_child_weight":[5,7,10]
+}
+
+
+base_params = {
+    "objective": 'reg:squarederror',
+    "eta": .1,
+    "eval_metric": ['rmse'],
+    "tree_method": 'hist',
+    "seed":42,
+    "nthread": 1,
+    "max_depth": [3,5,7,10],
+    "min_child_weight": [5,7,10]
+}
+```
+
+```{python}
+results = []
+
+for md in params_new["max_depth"]:
+    for mcw in params_new["min_child_weight"]:
+        params = base_params.copy()
+        params["max_depth"] = md
+        params["min_child_weight"] = mcw
+
+        additional_tuning_cv = xgb.cv(
+            params = params,
+            dtrain = dtrain,
+            num_boost_round = best_iteration,
+            nfold = 5, 
+            early_stopping_rounds = 20,
+            shuffle = True,
+            verbose_eval = False, 
+            seed = 42
+        )
+
+        results.append({
+            "max_depth":md,
+            "min_child_weight":mcw,
+            "best_round":len(additional_tuning_cv),
+            "train-rmse":additional_tuning_cv['train-rmse-mean'].min(),
+            "test-rmse":additional_tuning_cv['test-rmse-mean'].min()
+            
+        })
+```
+
+
+```{python}
+cv_results_df = (
+    pd.DataFrame(results)
+      .sort_values(["test-rmse", "train-rmse"], ascending=[True, True])
+      .reset_index(drop=True)
+)
+
+best_pair = cv_results_df.iloc[0].to_dict()
+print("Best (by min test_error, then max AUC):", best_pair)
+
+tuned_depth = int(best_pair['max_depth'])
+tuned_min_child_weight = int(best_pair['min_child_weight'])
+```
+
+
+```{python}
+
+gamma_results = []
+gamma = [0.001, 0.001, 0.05, 0.1, .15, .2, .3]
+params = {
+    "objective": 'reg:squarederror',
+    "eta": .1,
+    "eval_metric": ['rmse'],
+    "tree_method": 'hist',
+    "seed":111111,
+    "nthread": -1,
+    "max_depth":tuned_depth,
+    "min_child_weight": tuned_min_child_weight
+}
+
+for g in gamma:
+    new_params = params.copy()
+    new_params['gamma'] = float(g)
+
+    optimalgammaboost = xgb.cv(
+        params= new_params,
+        dtrain = dtrain,
+        num_boost_round = 248,
+        nfold = 5, 
+        early_stopping_rounds = 20,
+        shuffle = True, 
+        verbose_eval = False, 
+        seed = 42
+    )
+    best_round = len(optimalgammaboost)
+    best_row = optimalgammaboost.iloc[best_round-1]
+    gamma_results.append({
+            "gamma":g,
+            "max_depth":md,
+            "min_child_weight":mcw,
+            "best_round":len(additional_tuning_cv),
+            "train-rmse":additional_tuning_cv['train-rmse-mean'].min(),
+            "test-rmse":additional_tuning_cv['test-rmse-mean'].min()
+            
+        })
+    gamma_df = pd.DataFrame(gamma_results).sort_values(['test-rmse', 'train-rmse',], ascending=[True, True]).reset_index(drop=True)
+    gamma_df
+```
+
+
+```{python}
+best_gamma = float(gamma_df.iloc[0]['gamma'])
+```
+
+```{python}
+num_boost_rounds = 248
+best_gamma = 0.001
+tuned_depth = 10
+tuned_min_child_weight = 5
+
+
+params = {
+    "objective": 'reg:squarederror',
+    "eta": .1,
+    "eval_metric": ['rmse'],
+    "tree_method": 'hist',
+    "seed":111111,
+    "nthread": -1,
+    "max_depth":tuned_depth,
+    "min_child_weight": tuned_min_child_weight,
+    "gamma": best_gamma
+}
+```
+
+
+Subsample and colsample_bytree tuning
+
+```{python}
+
+additional_params = {
+    "subsample":[.4, .5, .6, .7, .8, .9, 1],
+    "colsample_bytree":[.4, .5, .6, .7, .8, .9, 1]
+}
+
+tuned_subsamples_results = []
+
+for ss in additional_params['subsample']:
+    for cst in additional_params['colsample_bytree']:
+        best_params = params.copy()
+        best_params['subsample'] = ss
+        best_params['colsample_bytree'] = cst
+
+        tuned_subsamples = xgb.cv(
+            params = params, 
+            dtrain = dtrain, 
+            num_boost_round = 248,
+            nfold = 5,
+            early_stopping_rounds = 20, 
+            shuffle = True, 
+            verbose_eval = False, 
+            seed = 42
+        )
+
+        best_round = len(tuned_subsamples)
+        best_row =  tuned_subsamples.iloc[best_round-1]
+
+
+        tuned_subsamples_results.append({
+            "subsample":ss, 
+            "colsample_bytree": cst,
+            "best_round": int(best_round),
+            "test_rmse": float(best_row['test-rmse-mean']),
+            'train_rmse':float(best_row['train-rmse-mean'])
+        })
+
+        tuned_subsamples_results_df = pd.DataFrame(tuned_subsamples_results)
+
+
+
+```
+
+```{python}
+tuned_subsamples_results_df = tuned_subsamples_results_df.sort_values(['test_rmse', 'train_rmse'], ascending=[True, True]).reset_index(drop=True)
+
+best = tuned_subsamples_results_df.iloc[0].to_dict()
+tuned_subsample = best['subsample']
+tuned_colsample = best['colsample_bytree']
+```
+
+```{python}
+num_boost_rounds = 229
+best_gamma = 0.001
+tuned_depth = 10
+tuned_min_child_weight = 5
+tuned_subsample = .4
+tuned_colsample = .4
+
+params = {
+    "objective": 'reg:squarederror',
+    "eta": .1,
+    "eval_metric": ['rmse'],
+    "tree_method": 'hist',
+    "seed":111111,
+    "nthread": -1,
+    "max_depth":tuned_depth,
+    "min_child_weight": tuned_min_child_weight,
+    "gamma": best_gamma, 
+    "subsample": tuned_subsample,
+    "colsample_bytree":tuned_colsample
+}
+```
+
+Finding Best ETA 
+
+
+```{python}
+from tqdm import tqdm
+import numpy as np
+
+etas = np.arange(0.0001, 0.1, 0.005)
+additional_params = {'eta': etas}
+
+optimal_eta_results = []
+
+for e in tqdm(etas, desc="Tuning eta"):
+    params_new = params.copy()
+    params_new['eta'] = e   
+
+    boostedoptimal_eta = xgb.cv(
+        params=params, 
+        dtrain=dtrain, 
+        num_boost_round=best_iteration,
+        nfold=5, 
+        early_stopping_rounds=20, 
+        shuffle=True, 
+        verbose_eval=False, 
+        seed=42,
+    )
+
+    boostedoptimal_eta_results = boostedoptimal_eta.reset_index().rename(columns={'index':'iter'})
+
+    best_row = boostedoptimal_eta_results.iloc[-1]
+    best_test_rmse = float(best_row['test-rmse-mean'])
+    best_train_rmse = float(best_row['train-rmse-mean'])
+
+    optimal_eta_results.append({
+        "eta": e,
+        "best_round": len(boostedoptimal_eta_results),
+        "best_train_rmse": best_train_rmse,
+        "best_test_rmse": best_test_rmse
+    })
+
+
+```
+
+```{python}
+optimal_eta_df = pd.DataFrame(optimal_eta_results)
+optimal_eta_df  = optimal_eta_df.sort_values(['best_test_rmse', 'best_train_rmse'], ascending=[True, True])
+best_row = optimal_eta_df.iloc[0]
+best_eta = float(best_row['eta'])
+```
+
+Optimal Parameters 
+
+```{python}
+
+num_boost_rounds = 229
+best_gamma = 0.001
+tuned_depth = 10
+tuned_min_child_weight = 5
+tuned_subsample = .4
+tuned_colsample = .4
+best_eta = .0001
+
+final_params = {
+    "objective": 'reg:squarederror',
+    "eta": best_eta,
+    "eval_metric": ['rmse'],
+    "tree_method": 'hist',
+    "seed":111111,
+    "nthread": -1,
+    "max_depth":tuned_depth,
+    "min_child_weight": tuned_min_child_weight,
+    "gamma": best_gamma, 
+    "subsample": tuned_subsample,
+    "colsample_bytree":tuned_colsample
+}
+```
+
+Fitting Best Boosted
+
+```{python}
+
+watchlist = [(dtrain, "training")]
+FinalBoosted_5 =  xgb.train(
+    params = final_params,
+    dtrain = dtrain,
+    num_boost_round = 229,
+    evals = watchlist, 
+    verbose_eval = 50)
+```
+
+
+```{python}
+final5daypercentchange = FinalBoosted_5.predict(dtest)
+merged['final_prediction'] = final5daypercentchange
+```
+
+Final RMSE
+
+MSE
+
+1/n * sum(actual - predicted)^2
+
+```{python}
+error = []
+for i in range(0, len(merged+1)):
+    diff = float(merged['actual'].iloc[i] - merged['final_prediction'].iloc[i]) **2
+    error.append(diff)
+    Final_MSE= (1/len(merged)) * sum(error)
+print(Final_MSE)
+```
+
+MSE for five day change: 0.00204304
+
+
+
+RMSE
+
+Square Root of MSE
+
+```{python}
+five_day_rmse_final = Final_MSE**.5
+print(five_day_rmse_final)
+```
+
+Final RMSE of .0452000
+
+Comparing Initial Final vs Initial MSE
+
+```{python}
+MSE_Change = Final_MSE - MSE
+MSE_Change
+```
+
+Comparing RMSE
+
+```{python}
+RMSE_Change = float(five_day_rmse_final - rmse)
+RMSE_Change
+```
+
+
+```{python}
+import joblib
+final_model_filename = 'ContinuousFiveDayFinal.joblib'
+joblib.dump(FinalBoosted_5, final_model_filename)
+```

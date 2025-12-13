@@ -1,6 +1,8 @@
 # Optimizing Stock Market Performance Using ML Ensemble Models
 
 
+# Please reach out to me at romesluke@gmail.com for model access.
+
 # Introduction
 
 The outcome of this project is multi-fold, the goal is to predict if a
