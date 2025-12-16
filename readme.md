@@ -1,7 +1,7 @@
 # Optimizing Stock Market Performance Using ML Ensemble Models
 
 
-# Please reach out to me at romesluke@gmail.com for model access.
+# Please reach out to me at romesluke@gmail.com for model access / additional information.
 
 # Introduction
 
@@ -115,101 +115,6 @@ streamlined), this will transform the results of the model to a
 plottable format as well as pull the SP500 prices from the same days
 allowing for the model performance to truly be evaluated.
 
-### Trading Simulation Results vs SP500
-
-Here I am showing the model results on future data Nov 11th - Nov 26th
-2025.
-
-``` python
-model_perf = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/modelovertime_future.csv")
-removed_holdings = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/removed_holdings_future.csv")
-trade_log = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/trade_log_df_future.csv")
-sp_final = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/sp500_final.csv")
-sp_prices = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/sp500closing.csv")
-trade_log.loc[0, 'Cash_before'] = 100000
-import numpy as np
-future_merged = pd.merge(removed_holdings, trade_log, how= 'inner', left_on=['Stock', 'Shares_Owned'], right_on=['Ticker', 'Shares'])
-future_merged = future_merged.drop('Unnamed: 0', axis = 1)
-sp_prices['shares'] = 100000 / sp_prices['Close'].iloc[0]
-sp_prices['value'] = np.nan
-for i in range(0, len(sp_prices)):
-    sp_prices['value'].iloc[i] = sp_prices['shares'].iloc[0] * sp_prices['Close'].iloc[i]
-
-
-final_sp_future = sp_prices
-final_sp_future['Date'] = pd.to_datetime(final_sp_future['Date'])
-final_sp_future = final_sp_future[final_sp_future['Date'] >= '2025-11-12']
-final_sp_future = final_sp_future[final_sp_future['Date'] <= '2025-11-26']
-trade_log['Date'] = pd.to_datetime(trade_log['Date'])
-from plotnine import *
-future_price_comparisons_plot = (ggplot(trade_log, aes(x = 'Date', 
-                                                        y = 'Cash_before'))+ geom_line()+ geom_line(final_sp_future, aes(x ='Date',y = 'value' ), color = 'red'))
-trade_log['label'] = 'Model Trading'
-final_sp_future['label'] = 'S&P 500 Baseline'
-
-test_price_comparisons_plot = (
-    ggplot() +
-    geom_line(
-        trade_log,
-        aes(x='Date', y='Cash_before', color='label')
-    ) +
-    geom_line(
-        final_sp_future,
-        aes(x='Date', y='value', color='label')
-    ) +
-    scale_color_manual(values=['navy', 'dodgerblue']) +
-    scale_x_datetime(date_breaks="3 days", date_labels="%Y-%m-%d") +
-    labs(
-        color='Legend',
-        y='Value',
-        title='Model Trading vs SP500 During Future Period'
-    ) +
-    theme(
-        axis_text_x=element_text(rotation=45, hjust=1),
-        figure_size=(12, 6)
-    )
-)
-
-test_price_comparisons_plot
-```
-
-<img src="readme_files/figure-commonmark/cell-8-output-1.png"
-width="576" height="288" />
-
-``` python
-print(future_merged)
-```
-
-      Stock   Sell_Date  Sell_Price  Shares_Owned       Proceeds     sell_value  \
-    0  GEHC  2025-11-13   73.699997   1085.481727   80000.000000   80000.000000   
-    1  SOLV  2025-11-14   73.510002   1362.052423  100124.476529  100124.476529   
-    2  AMAT  2025-11-18  223.761387    492.371724  110173.779582  110173.779582   
-    3  AMCR  2025-11-19    8.440000  13053.766002  110173.779582  110173.779582   
-    4  AMTM  2025-11-20   21.750000   5065.461130  110173.779582  110173.779582   
-    5  GEHC  2025-11-21   73.129997   1506.547022  110173.779582  110173.779582   
-    6    MU  2025-11-25  213.410004    538.668069  114957.154669  114957.154669   
-    7  AMTM  2025-11-26   28.350000   4054.926036  114957.154669  114957.154669   
-
-      Action_x        Date Ticker Action_y       Price        Shares  \
-    0     Sell  2025-11-12   GEHC      BUY   73.699997   1085.481727   
-    1     Sell  2025-11-13   SOLV      BUY   73.510002   1362.052423   
-    2     Sell  2025-11-14   AMAT      BUY  203.351394    492.371724   
-    3     Sell  2025-11-18   AMCR      BUY    8.440000  13053.766002   
-    4     Sell  2025-11-19   AMTM      BUY   21.750000   5065.461130   
-    5     Sell  2025-11-20   GEHC      BUY   73.129997   1506.547022   
-    6     Sell  2025-11-21     MU      BUY  204.529999    538.668069   
-    7     Sell  2025-11-25   AMTM      BUY   28.350000   4054.926036   
-
-         Cash_before  
-    0  100000.000000  
-    1  100124.476529  
-    2  100124.476529  
-    3  110173.779582  
-    4  110173.779582  
-    5  110173.779582  
-    6  110173.779582  
-    7  114957.154669  
-
 Simulation two consisting of unseen future dates outpreformed the SP500.
 The model resulted in a 14.958% return compared to -0.29% return that
 the SP500 returned during the same time period. During this simulation,
@@ -231,3 +136,7 @@ preprocessing func and turn those into one function which automatically
 transforms the data into its final input form for the model, runs the
 models, and saves the results. I hope to have these tasks done by Dec
 20th, 2025.
+
+## Stocks Predicted to go up Dec 16th, 2025:
+
+-CSCO -WMB -DELL -GEHC -IVZ -CL -EW -SYF -CVX -TRMB
