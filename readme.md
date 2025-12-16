@@ -1,8 +1,6 @@
 # Optimizing Stock Market Performance Using ML Ensemble Models
 
 
-# Please reach out to me at romesluke@gmail.com for model access / additional information.
-
 # Introduction
 
 The outcome of this project is multi-fold, the goal is to predict if a
@@ -139,4 +137,6 @@ models, and saves the results. I hope to have these tasks done by Dec
 
 ## Stocks Predicted to go up Dec 16th, 2025:
 
--CSCO -WMB -DELL -GEHC -IVZ -CL -EW -SYF -CVX -TRMB
+CSCO, WMB, DELL, GEHC, IVZ, CL, EW, SYF, CVX, TRMB
+
+## Please reach out to me at romesluke@gmail.com for model access / additional information.

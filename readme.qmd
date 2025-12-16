@@ -2,7 +2,6 @@
 title: "Optimizing Stock Market Performance Using ML Ensemble Models"
 format: gfm
 ---
-# Please reach out to me at romesluke@gmail.com for model access / additional information.
 
 # Introduction
 
@@ -56,16 +55,9 @@ Save the remaining two functions, binary preprocessing func, and cont preprocess
 
 ## Stocks Predicted to go up Dec 16th, 2025:
 
--CSCO
--WMB
--DELL
--GEHC
--IVZ
--CL
--EW
--SYF
--CVX
--TRMB
+CSCO, WMB, DELL, GEHC, IVZ, CL, EW, SYF, CVX, TRMB
+
+## Please reach out to me at romesluke@gmail.com for model access / additional information.
 
 
 
