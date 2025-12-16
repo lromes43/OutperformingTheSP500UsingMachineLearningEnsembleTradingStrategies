@@ -609,14 +609,6 @@ Calling Creating Vars Function
 
 
 ```{python}
-import joblib
-model = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/Models/FinalBoostedOneDayClassifier.job.lib")
-
-
-
-```
-
-```{python}
 import pandas as pd
 data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/CHECKFEATHER.feather")
 
