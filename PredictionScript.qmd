@@ -624,7 +624,7 @@ import pandas as pd
 import joblib
 import xgboost as xgb
 
-binary = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/Models/FinalBoostedOneDayClassifier.job.lib")
+binary = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/Model/FinalBoostedOneDayClassifier.job.lib")
 model_feature_names = binary.feature_names 
 
 df = data.copy() 
@@ -679,7 +679,7 @@ target_date = pd.to_datetime('2025-12-16')
 
 results_df_filtered = results_df[results_df['Date'].dt.date == target_date.date()]
 
-results_df_filtered['Buy'] = (results_df_filtered['Predicted_Movement'] >= 0.52).astype(int)
+results_df_filtered['Buy'] = (results_df_filtered['Predicted_Movement'] >= 0.536).astype(int)
 results_df_filtered_binary = results_df_filtered
 ```
 
@@ -694,7 +694,7 @@ import numpy as np
 import warnings
 warnings.filterwarnings('ignore', category=FutureWarning)
 
-cont = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/Models/ContinuousOneDayFinal.joblib")
+cont = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/Model/ContinuousOneDayFinal.joblib")
 
 try:
     model_feature_names = cont.feature_names
