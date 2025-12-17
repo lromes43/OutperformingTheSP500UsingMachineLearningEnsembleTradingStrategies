@@ -51,10 +51,8 @@ retrain the models that I have created which can be found in the ML
 subfolder within the Scripts subfolder. These scripts are saved as qmd,
 allowing for them to be run cell by cell.
 
-``` python
-import joblib
-binaryone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/FinalBoostedOneDayClassifier.joblib")
-```
+import joblib binaryone = joblib.load(“/Users/lukeromes/Desktop/Initial
+Models/FinalBoostedOneDayClassifier.joblib”)
 
 ## Running the Machine Learning Models
 
@@ -137,6 +135,6 @@ models, and saves the results. I hope to have these tasks done by Dec
 
 ## Stocks Predicted to go up Dec 17th, 2025:
 
-SYF,CRM,APH,ANET,APTV,TRMB,GLW,CCI,UPS,CSCO
+EXPE,MDT,GEV,YUM,UDR,HOLX,KEY,LH,DAL,TJX
 
 ## Please reach out to me at romesluke@gmail.com for model access / additional information.

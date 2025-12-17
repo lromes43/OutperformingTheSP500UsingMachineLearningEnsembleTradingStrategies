@@ -22,8 +22,7 @@ Machine learning models are pretrained and saved in the Models subfolder as .job
 
 ```{python}
 import joblib
-binaryone = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/Models/FinalBoostedOneDayClassifier.joblib")
-```
+binaryone = joblib.load("/Users/lukeromes/Desktop/Initial Models/FinalBoostedOneDayClassifier.joblib")
 
 ## Running the Machine Learning Models
 
@@ -55,7 +54,7 @@ Save the remaining two functions, binary preprocessing func, and cont preprocess
 
 ## Stocks Predicted to go up Dec 17th, 2025:
 
-SYF,CRM,APH,ANET,APTV,TRMB,GLW,CCI,UPS,CSCO
+EXPE,MDT,GEV,YUM,UDR,HOLX,KEY,LH,DAL,TJX
 
 ## Please reach out to me at romesluke@gmail.com for model access / additional information.
 
