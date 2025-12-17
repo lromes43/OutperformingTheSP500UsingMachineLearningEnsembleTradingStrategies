@@ -21,7 +21,7 @@ sp500_url = "https://datahub.io/core/s-and-p-500-companies-financials/r/constitu
 combined_csv = "/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/Data/combined_sp500_data.csv" 
 final_feather_file = "/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/FinalTestData.feather"
 start_date = "2025-12-11"
-end_date = "2025-12-16"
+end_date = "2025-12-17"
 
 MAX_RETRIES = 3 
 MIN_TICKER_SLEEP = 3.5 
@@ -610,7 +610,7 @@ Calling Creating Vars Function
 
 ```{python}
 import pandas as pd
-data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/CHECKFEATHER.feather")
+data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/CHECKFEATHER.feather")
 
 
 ```
@@ -674,7 +674,7 @@ import numpy as np
 
 results_df['Date'] = pd.to_datetime(results_df['Date'])
 
-target_date = pd.to_datetime('2025-12-15')
+target_date = pd.to_datetime('2025-12-16')
 
 
 results_df_filtered = results_df[results_df['Date'].dt.date == target_date.date()]
@@ -764,7 +764,7 @@ import numpy as np
 
 results_df['Date'] = pd.to_datetime(results_df['Date'])
 
-target_date = pd.to_datetime('2025-12-15')
+target_date = pd.to_datetime('2025-12-16')
 
 
 results_df_filtered_cont = results_df[results_df['Date'].dt.date == target_date.date()]

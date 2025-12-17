@@ -135,8 +135,8 @@ transforms the data into its final input form for the model, runs the
 models, and saves the results. I hope to have these tasks done by Dec
 20th, 2025.
 
-## Stocks Predicted to go up Dec 16th, 2025:
+## Stocks Predicted to go up Dec 17th, 2025:
 
-CSCO, WMB, DELL, GEHC, IVZ, CL, EW, SYF, CVX, TRMB
+SYF,CRM,APH,ANET,APTV,TRMB,GLW,CCI,UPS,CSCO
 
 ## Please reach out to me at romesluke@gmail.com for model access / additional information.
