@@ -624,7 +624,7 @@ import pandas as pd
 import joblib
 import xgboost as xgb
 
-binary = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/Model/FinalBoostedOneDayClassifier.job.lib")
+binary = joblib.load("/Users/lukeromes/Desktop/Sp500Project/RetrainedModels/FinalBoostedOneDayClassifier.job.lib")
 model_feature_names = binary.feature_names 
 
 df = data.copy() 
@@ -662,7 +662,6 @@ results_df = pd.DataFrame({
     'Predicted_Movement': predictions1 
 })
 
-print("\n--- Final Prediction Results ---")
 print(results_df.head(10)) 
 
 
@@ -679,8 +678,14 @@ target_date = pd.to_datetime('2025-12-16')
 
 results_df_filtered = results_df[results_df['Date'].dt.date == target_date.date()]
 
-results_df_filtered['Buy'] = (results_df_filtered['Predicted_Movement'] >= 0.536).astype(int)
+thirdquartile_movement = float(results_df.describe(include='all').iloc[8,2])
+secondquartile = float(results_df.describe(include='all').iloc[7,2])
+
+threshold = (thirdquartile_movement + secondquartile)/2
+
+results_df_filtered['Buy'] = (results_df_filtered['Predicted_Movement'] >= threshold).astype(int)
 results_df_filtered_binary = results_df_filtered
+results_df_filtered_binary = results_df_filtered_binary.sort_values('Predicted_Movement', ascending=False)
 ```
 
 Fitting cont model 
@@ -694,7 +699,7 @@ import numpy as np
 import warnings
 warnings.filterwarnings('ignore', category=FutureWarning)
 
-cont = joblib.load("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/Model/ContinuousOneDayFinal.joblib")
+cont = joblib.load("/Users/lukeromes/Desktop/Sp500Project/RetrainedModels/ContinuousOneDayFinal.joblib")
 
 try:
     model_feature_names = cont.feature_names
@@ -750,11 +755,6 @@ predictions = cont.predict(dpred)
 results_df = identifiers_df.copy()
 results_df['Predicted_Pct_Change'] = predictions
 
-
-print("\n--- Prediction Data Preparation Complete ---")
-print(f"Prediction features shape: {X_pred_aligned.shape}")
-print("\n--- Predicted Next Day Percent Change ---")
-print(results_df.head())
 ```
 
 
@@ -769,7 +769,18 @@ target_date = pd.to_datetime('2025-12-16')
 
 results_df_filtered_cont = results_df[results_df['Date'].dt.date == target_date.date()]
 
-results_df_filtered_cont['Buy'] = (results_df_filtered_cont['Predicted_Pct_Change'] >= 0.000135).astype(int)
+
+
+thirdquartile_movement = float(results_df_filtered_cont .describe(include='all').iloc[8,2])
+secondquartile = float(results_df_filtered_cont .describe(include='all').iloc[7,2])
+
+threshold = (thirdquartile_movement + secondquartile)/2
+
+results_df_filtered_cont ['Buy'] = (results_df_filtered_cont ['Predicted_Pct_Change'] >= threshold).astype(int)
+results_df_filtered_cont = results_df_filtered_cont 
+
+results_df_filtered_cont = results_df_filtered_cont.sort_values('Predicted_Pct_Change', ascending=False)
+
 
 
 ```
@@ -777,7 +788,7 @@ results_df_filtered_cont['Buy'] = (results_df_filtered_cont['Predicted_Pct_Chang
 
 ```{python}
 
-print("DTypes before fix:")
+
 print("Continuous DF Date Dtype:", results_df_filtered_cont['Date'].dtype)
 print("Binary DF Date Dtype:", results_df_filtered_binary['Date'].dtype)
 
