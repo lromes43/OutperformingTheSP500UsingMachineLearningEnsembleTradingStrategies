@@ -118,4 +118,4 @@ def run_sp500_pipeline(start_date, end_date):
     print(f"\n✅ SUCCESS: Saved to {final_feather_file}")
 
 if __name__ == "__main__":
-    run_sp500_pipeline("2024-01-01", "2024-12-01")
+    run_sp500_pipeline("2025-12-10", "2025-12-17")
