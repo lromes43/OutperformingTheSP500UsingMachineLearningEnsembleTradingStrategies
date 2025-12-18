@@ -12,7 +12,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 def run_sp500_pipeline(start_date, end_date):
     base_path = "/Users/lukeromes/Desktop/Personal/Sp500Project"
     download_dir = os.path.join(base_path, "Data/Pulling")
-    final_feather_file = os.path.join(base_path, "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FinalTestData.feather")
+    final_feather_file = os.path("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FinalTestData.feather")
     
     os.makedirs(download_dir, exist_ok=True)
     
@@ -117,5 +117,3 @@ def run_sp500_pipeline(start_date, end_date):
     df.reset_index(drop=True).to_feather(final_feather_file)
     print(f"\n✅ SUCCESS: Saved to {final_feather_file}")
 
-if __name__ == "__main__":
-    run_sp500_pipeline("2025-12-10", "2025-12-17")

@@ -66,9 +66,6 @@ def binary_prediction_func(data, prediction_date):
     results_df_filtered_binary.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/Results_df_filtered_binary.csv")
     return results_df_filtered_binary
 
-import pandas as pd
-binary_prediction_func(data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/FinalTestData.feather"), prediction_date = '2025-12-16')
-
 
 #Fitting cont model 
 
@@ -158,9 +155,6 @@ def cont_prediction_func(data, prediction_date):
     results_df_filtered_cont.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/Results_df_filtered_cont.csv")
     return results_df_filtered_cont
 
-import pandas as pd
-cont_prediction_func(data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/FinalTestData.feather"), prediction_date = '2025-12-16')
-
 
 
 def model_results_merging(data1, data2):
@@ -197,8 +191,3 @@ def model_results_merging(data1, data2):
     
     return merged_final
 
-import pandas as pd
-data1 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/Results_df_filtered_binary.csv")
-data2 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/Results_df_filtered_cont.csv")
-
-result = model_results_merging(data1, data2)

@@ -133,8 +133,8 @@ transforms the data into its final input form for the model, runs the
 models, and saves the results. I hope to have these tasks done by Dec
 20th, 2025.
 
-## Stocks Predicted to go up Dec 17th, 2025:
+## Stocks Predicted to go up Dec 19th, 2025:
 
-EXPE,MDT,GEV,YUM,UDR,HOLX,KEY,LH,DAL,TJX
+SMCI,MU,WBD,ORCL,PWR,CRWD,GEV,CAT,WMB,PYPL
 
 ## Please reach out to me at romesluke@gmail.com for model access / additional information.
