@@ -13,13 +13,18 @@ data2 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingMo
 
 
 
+
 sp500_pipeline.run_sp500_pipeline(date1_in_range , date2_in_range )
+
+
 
 dailymodels.binary_prediction_func(data, prediction_date)
 
 dailymodels.cont_prediction_func(data, prediction_date)
 
 dailymodels.model_results_merging(data1, data2)
+
+
 
 
 
