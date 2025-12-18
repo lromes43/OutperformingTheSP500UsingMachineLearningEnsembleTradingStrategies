@@ -63,11 +63,11 @@ def binary_prediction_func(data, prediction_date):
     results_df_filtered['Buy'] = (results_df_filtered['Predicted_Movement'] >= threshold).astype(int)
     results_df_filtered_binary = results_df_filtered
     results_df_filtered_binary = results_df_filtered_binary.sort_values('Predicted_Movement', ascending=False)
-    results_df_filtered_binary.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/DailyPredictions/Results_df_filtered_binary.csv")
+    results_df_filtered_binary.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/Results_df_filtered_binary.csv")
     return results_df_filtered_binary
 
 import pandas as pd
-binary_prediction_func(data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/FinalTestData.feather"), prediction_date = '2025-12-16')
+binary_prediction_func(data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/FinalTestData.feather"), prediction_date = '2025-12-16')
 
 
 #Fitting cont model 
@@ -155,11 +155,11 @@ def cont_prediction_func(data, prediction_date):
     results_df_filtered_cont = results_df_filtered_cont 
 
     results_df_filtered_cont = results_df_filtered_cont.sort_values('Predicted_Pct_Change', ascending=False)
-    results_df_filtered_cont.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/DailyPredictions/Results_df_filtered_cont.csv")
+    results_df_filtered_cont.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/Results_df_filtered_cont.csv")
     return results_df_filtered_cont
 
 import pandas as pd
-cont_prediction_func(data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/FinalTestData.feather"), prediction_date = '2025-12-16')
+cont_prediction_func(data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/FinalTestData.feather"), prediction_date = '2025-12-16')
 
 
 
@@ -191,14 +191,14 @@ def model_results_merging(data1, data2):
     merged_final = merged_final.sort_values('Predicted_Pct_Change', ascending=False)
     merged_final = merged_final.head(10)
 
-    output_path = "/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/DailyPredictions/Merged_Final.csv"
+    output_path = "/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/Merged_Final.csv"
     merged_final.to_csv(output_path, index=False)
     print(f"Successfully saved to {output_path}")
     
     return merged_final
 
 import pandas as pd
-data1 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/DailyPredictions/Results_df_filtered_binary.csv")
-data2 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/DailyPredictions/Results_df_filtered_cont.csv")
+data1 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/Results_df_filtered_binary.csv")
+data2 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/Results_df_filtered_cont.csv")
 
 result = model_results_merging(data1, data2)

@@ -12,7 +12,7 @@ def train_test_split_by_date_function(data_path, train_end_date, test_start_date
     train_subset = data[data['Date'] <= t_end].copy()
     test_subset = data[data['Date'] >= v_start].copy()
 
-    base_path = "/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/Data/"
+    base_path = "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/"
     train_subset.to_feather(f"{base_path}TrainData.feather")
     test_subset.to_feather(f"{base_path}TestData.feather")
 
