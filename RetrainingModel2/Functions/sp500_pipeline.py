@@ -12,7 +12,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 def run_sp500_pipeline(start_date, end_date):
     base_path = "/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2"
     download_dir = os.path.join(base_path, "Data/Pulling")
-    final_feather_file = os.path.join(base_path, "FinalTestData.feather")
+    final_feather_file = os.path.join(base_path, "/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/Data/FinalTestData.feather")
     
     os.makedirs(download_dir, exist_ok=True)
     
