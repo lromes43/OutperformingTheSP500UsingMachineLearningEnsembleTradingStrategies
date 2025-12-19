@@ -7,9 +7,12 @@ import dailymodels
 
 date1_in_range = "2025-12-10"
 date2_in_range = "2025-12-19"
+sp500_pipeline.run_sp500_pipeline(start_date = date1_in_range , end_date = date2_in_range)
+
+
 data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/RetrainingModel2/FinalTestData.feather")
 prediction_date = '2025-12-18'
-sp500_pipeline.run_sp500_pipeline(start_date = date1_in_range , end_date = date2_in_range)
+
 
 
 dailymodels.binary_prediction_func(data, prediction_date)
