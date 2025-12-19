@@ -10,9 +10,6 @@ from datetime import datetime
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def run_sp500_pipeline(start_date, end_date):
-    # -------------------------------
-    # PATHS (FIXED)
-    # -------------------------------
     BASE_DIR = "/Users/lukeromes/Desktop/Personal/Sp500Project"
     DATA_DIR = os.path.join(BASE_DIR, "Data")
     DOWNLOAD_DIR = os.path.join(DATA_DIR, "Pulling")
@@ -142,4 +139,4 @@ def run_sp500_pipeline(start_date, end_date):
         df[col] = 0
 
     df.reset_index(drop=True).to_feather(FINAL_FEATHER_FILE)
-    print(f"\n✅ SUCCESS: Saved to {FINAL_FEATHER_FILE}")
+    print(f"\n SUCCESS: Saved to {FINAL_FEATHER_FILE}")
