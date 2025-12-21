@@ -11,29 +11,26 @@ sp500_pipeline.run_sp500_pipeline(start_date = date1_in_range , end_date = date2
 
 
 data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FinalTestData.feather")
-prediction_date = '2025-12-15'
+prediction_date = '2025-12-12'
 
 
 
-dailymodels.binary_prediction_func(data, prediction_date)
+FiveDayModels.binary_prediction_func(data, prediction_date)
 
-dailymodels.cont_prediction_func(data, prediction_date)
+FiveDayModels.cont_prediction_func(data, prediction_date)
 
 
 data1 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/FiveDay/Five_Day_Results_df_filtered_binary.csv")
-data2 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/FiveDay/Five_Day_Results_df_filtered_cont.csv"))
+data2 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/FiveDay/Five_Day_Results_df_filtered_cont.csv")
 
 
 
-dailymodels.model_results_merging(data1, data2)
+FiveDayModels.model_results_merging(data1, data2)
 
 
 
 
-check = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FinalTestData.feather")
 
 
-
-c
 
 
