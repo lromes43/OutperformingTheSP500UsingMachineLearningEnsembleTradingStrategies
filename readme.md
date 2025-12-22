@@ -134,6 +134,6 @@ models, and saves the results. I hope to have these tasks done by Dec
 
 ## Stocks Predicted to go up Dec 19th, 2025:
 
-SMCI,MU,WBD,ORCL,PWR,CRWD,GEV,CAT,WMB,PYPL
+SMCI,MO,WBD,T,WMT,KO,PYPL,CVS,CPRT,IP
 
 ## Please reach out to me at romesluke@gmail.com for model access / additional information.
