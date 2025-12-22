@@ -6,12 +6,12 @@ import dailymodels
 
 
 date1_in_range = "2025-12-10"
-date2_in_range = "2025-12-19"
+date2_in_range = "2025-12-22"
 sp500_pipeline.run_sp500_pipeline(start_date = date1_in_range , end_date = date2_in_range)
 
 
 data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FinalTestData.feather")
-prediction_date = '2025-12-18'
+prediction_date = '2025-12-19'
 
 
 
