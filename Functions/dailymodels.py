@@ -159,35 +159,36 @@ def cont_prediction_func(data, prediction_date):
 
 def model_results_merging(data1, data2):
     import pandas as pd
-    data1['Date'] = pd.to_datetime(data1['Date'])
-    data2['Date'] = pd.to_datetime(data2['Date'])
+    data1 = data1.loc[:, ~data1.columns.str.contains('^Unnamed')]
+    data2 = data2.loc[:, ~data2.columns.str.contains('^Unnamed')]
 
-    if data1['Date'].dt.tz is not None:
-        data1['Date'] = data1['Date'].dt.tz_localize(None)
-    if data2['Date'].dt.tz is not None:
-        data2['Date'] = data2['Date'].dt.tz_localize(None)
+    data1['Date'] = pd.to_datetime(data1['Date']).dt.tz_localize(None)
+    data2['Date'] = pd.to_datetime(data2['Date']).dt.tz_localize(None)
+
+    data1 = data1.drop(columns=['Predicted_Pct_Change'], errors='ignore')
 
     print(f"Data1 shape: {data1.shape}, Data2 shape: {data2.shape}")
 
     merged = pd.merge(
-        data2, 
-        data1, 
-        how='inner', 
+        data2,
+        data1,
+        how='inner',
         on=['Date', 'Ticker', 'Buy']
     )
 
     if merged.empty:
-        print("Warning: Merged dataframe is empty! Check if Date/Ticker/Buy values actually match.")
+        print("Warning: Merged dataframe is empty!")
         return merged
 
-    
-    merged_final = merged[merged['Buy'] == 1].copy()
-    merged_final = merged_final.sort_values('Predicted_Pct_Change', ascending=False)
-    merged_final = merged_final.head(10)
+    merged_final = (
+        merged[merged['Buy'] == 1]
+        .sort_values('Predicted_Pct_Change', ascending=False)
+        .head(10)
+    )
 
     output_path = "/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/OneDay/One_Day_Merged_Final.csv"
     merged_final.to_csv(output_path, index=False)
-    print(f"Successfully saved to {output_path}")
-    
-    return merged_final
 
+    print(f"Successfully saved to {output_path}")
+
+    return merged_final

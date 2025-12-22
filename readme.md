@@ -40,16 +40,15 @@ find the final data to run this in the data subfolder entitled
 within the DataLoadingScripts folder (work in progress in turning into a
 full pipeline) which calls the yfinance API to retrieve the data,
 transforms it by creating additional derived variables, and implements a
-train test split.
+train test split. NEED TO UPDATE!!!
 
 ## Machine Learning Models
 
 Machine learning models are pretrained and saved in the Models subfolder
 as .joblib files. To utilize this you must do below, and replace the
-file path with your desired model. Additionally you may recreate or
-retrain the models that I have created which can be found in the ML
-subfolder within the Scripts subfolder. These scripts are saved as qmd,
-allowing for them to be run cell by cell.
+file path with your desired model.Please reach out to me at
+romesluke@gmail.com and I will provide the saved models and scripts for
+you to use.
 
 import joblib binaryone = joblib.load(“/Users/lukeromes/Desktop/Initial
 Models/FinalBoostedOneDayClassifier.joblib”)
