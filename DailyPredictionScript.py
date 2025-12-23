@@ -28,12 +28,3 @@ data2 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredict
 dailymodels.model_results_merging(data1, data2)
 
 
-
-
-check = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FinalTestData.feather")
-
-
-
-c
-
-

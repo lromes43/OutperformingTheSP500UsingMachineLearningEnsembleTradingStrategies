@@ -132,7 +132,7 @@ transforms the data into its final input form for the model, runs the
 models, and saves the results. I hope to have these tasks done by Dec
 20th, 2025.
 
-## Stocks Predicted to go up Dec 19th, 2025:
+## Stocks Predicted to go up Dec 23rd, 2025:
 
 SMCI,MO,WBD,T,WMT,KO,PYPL,CVS,CPRT,IP
 
