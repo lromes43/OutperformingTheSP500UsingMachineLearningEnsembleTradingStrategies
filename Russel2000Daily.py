@@ -6,12 +6,12 @@ import Russell2000DailyModels
 
 
 date1_in_range = "2025-12-10"
-date2_in_range = "2025-12-23"
+date2_in_range = "2025-12-24"
 russel2000_pipeline.micro_pipeline(start_date = date1_in_range , end_date = date2_in_range)
 
 
-data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FinalTestData.feather")
-prediction_date = '2025-12-22'
+data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FinalRUSSEL2000.feather")
+prediction_date = '2025-12-23'
 
 
 
@@ -20,8 +20,8 @@ Russell2000DailyModels.binary_prediction_func(data, prediction_date)
 Russell2000DailyModels.cont_prediction_func(data, prediction_date)
 
 
-data1 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/OneDay/Results_df_filtered_cont.csv")
-data2 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/OneDay/Results_df_filtered_cont.csv")
+data1 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/Russell/Results_df_filtered_binary.csv")
+data2 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/Russell/Results_df_filtered_cont.csv")
 
 
 

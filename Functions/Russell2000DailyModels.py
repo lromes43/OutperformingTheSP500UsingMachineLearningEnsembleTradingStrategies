@@ -8,7 +8,7 @@ def binary_prediction_func(data, prediction_date):
     import joblib
     import xgboost as xgb
 
-    binary = joblib.load("/Users/lukeromes/Desktop/Sp500Project/RetrainedModels/Russel1000Classifier.job.lib")
+    binary = joblib.load("/Users/lukeromes/Desktop/Sp500Project/RetrainedModels/Russel2000Classifier.job.lib")
     model_feature_names = binary.feature_names 
 
     df = data.copy() 
