@@ -111,7 +111,7 @@ SMCI,CVS,HPE,WMB,LVS,T,NKE,ADM,IP,CSX
 
 ## Russell 2000 Stocks Predicted to go up Dec 24th, 2025:
 
-LAZR,ZYXI,HOWL,IRBTQ,APLT,MYPS,FBLG,PYXS,SCWO
+VABK, FPI, VRGV, TDOC, IVR, LOB, BBSI, IIIN, CWCO, PKE
 
 ## Please reach out to me at romesluke@gmail.com for model access / additional information.
 
