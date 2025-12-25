@@ -128,9 +128,9 @@ def micro_pipeline(start_date, end_date):
     df['next_5_day_close'] = group['Close'].shift(-5)
     df['next_30_day_close'] = group['Close'].shift(-30)
 
-    df['next_day_pct_change'] = (df['next_day_close'] - df['Close']) / df['Close']
-    df['next_5_day_pct_change'] = (df['next_5_day_close'] - df['Close']) / df['Close']
-    df['next_30_day_pct_change'] = (df['next_30_day_close'] - df['Close']) / df['Close']
+    df['next_day_pct_change'] = (df['next_day_close'] - df['Close']) / df['Close'] * 100
+    df['next_5_day_pct_change'] = (df['next_5_day_close'] - df['Close']) / df['Close'] * 100
+    df['next_30_day_pct_change'] = (df['next_30_day_close'] - df['Close']) / df['Close'] * 100
 
     df['Movement'] = (df['next_day_pct_change'] > 0).astype(int)
     df['Movement_5_day'] = (df['next_5_day_pct_change'] > 0).astype(int)
