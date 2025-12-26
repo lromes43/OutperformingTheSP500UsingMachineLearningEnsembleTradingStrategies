@@ -1,194 +1,191 @@
-
-#Fitting Binary Model
-
-
 def binary_prediction_func(data, prediction_date):
-    import pandas as pd
     import pandas as pd
     import joblib
     import xgboost as xgb
 
-    binary = joblib.load("/Users/lukeromes/Desktop/Sp500Project/RetrainedModels/FinalBoostedOneDayClassifier.job.lib")
-    model_feature_names = binary.feature_names 
+    # Load model
+    binary = joblib.load(
+        "/Users/lukeromes/Desktop/Sp500Project/RetrainedModels/FinalBoostedOneDayClassifier.job.lib"
+    )
+    model_feature_names = binary.feature_names
 
-    df = data.copy() 
-    df['Date'] = pd.to_datetime(df['Date'], utc=True) 
+    df = data.copy()
+    df['Date'] = pd.to_datetime(df['Date'], utc=True)
 
-    features_for_ohe = pd.get_dummies(df, columns=['Ticker'], prefix='Ticker', drop_first=True)
+    # Preserve identifiers
+    identifiers = df[['Date', 'Ticker']].copy()
 
+    # One-hot encode
+    X = pd.get_dummies(df, columns=['Ticker'], prefix='Ticker', drop_first=True)
+
+    # Drop targets
     columns_to_drop = [
-        'Movement',       
-        'next_day_pct_change',    
-        'Movement_5_day',     
-        'next_5_day_pct_change',  
-        'Movement_30_day',    
-        'next_30_day_pct_change', 
+        'Movement',
+        'next_day_pct_change',
+        'Movement_5_day',
+        'next_5_day_pct_change',
+        'Movement_30_day',
+        'next_30_day_pct_change',
     ]
+    X = X.drop(columns=columns_to_drop, errors='ignore')
 
-    X_train_processed = features_for_ohe.drop(columns=columns_to_drop, errors='ignore')
+    # Convert date to timestamp
+    X['Date'] = X['Date'].apply(lambda x: x.timestamp())
 
-    X_train_final = X_train_processed.copy()
+    # Align to model features
+    X = X.reindex(columns=model_feature_names, fill_value=0)
 
-    X_train_final['Date'] = X_train_final['Date'].apply(lambda x: x.timestamp())
+    # Predict
+    dpred = xgb.DMatrix(X)
+    predictions = binary.predict(dpred)
 
-    X_train_aligned = X_train_final.reindex(columns=model_feature_names, fill_value=0)
-
-    y_train_final = df['Movement'].astype(int)
-    dtrain = xgb.DMatrix(X_train_aligned, label=y_train_final)
-
-
-    predictions1 = binary.predict(dtrain)
-
-
-    results_df = pd.DataFrame({
-        'Date': df['Date'].dt.date, 
-        'Ticker': df['Ticker'],     
-        'Predicted_Movement': predictions1 
-    })
-
-    print(results_df.head(10)) 
-
+    # Results
+    results_df = identifiers.copy()
+    results_df['Predicted_Movement'] = predictions
     results_df['Date'] = pd.to_datetime(results_df['Date'])
 
+    # Filter prediction date
     target_date = pd.to_datetime(prediction_date)
+    results_df = results_df[
+        results_df['Date'].dt.date == target_date.date()
+    ].copy()
+
+    # Threshold via quantiles
+    q3 = results_df['Predicted_Movement'].quantile(0.75)
+    q2 = results_df['Predicted_Movement'].quantile(0.50)
+    threshold = (q3 + q2) / 2
+
+    results_df.loc[:, 'Buy'] = (
+        results_df['Predicted_Movement'] >= threshold
+    ).astype(int)
+
+    results_df = results_df.sort_values(
+        'Predicted_Movement', ascending=False
+    )
+
+    output_path = (
+        "/Users/lukeromes/Desktop/Personal/Sp500Project/"
+        "DailyPredictions/OneDay/Results_df_filtered_binary.csv"
+    )
+    results_df.to_csv(output_path, index=False)
+
+    return results_df
 
 
-    results_df_filtered = results_df[results_df['Date'].dt.date == target_date.date()]
-
-    thirdquartile_movement = float(results_df.describe(include='all').iloc[8,2])
-    secondquartile = float(results_df.describe(include='all').iloc[7,2])
-
-    threshold = (thirdquartile_movement + secondquartile)/2
-
-    results_df_filtered['Buy'] = (results_df_filtered['Predicted_Movement'] >= threshold).astype(int)
-    results_df_filtered_binary = results_df_filtered
-    results_df_filtered_binary = results_df_filtered_binary.sort_values('Predicted_Movement', ascending=False)
-    results_df_filtered_binary.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/OneDay/Results_df_filtered_binary.csv")
-    return results_df_filtered_binary
-
-
-#Fitting cont model 
 
 def cont_prediction_func(data, prediction_date):
     import pandas as pd
     import joblib
     import xgboost as xgb
-    import numpy as np
     import warnings
-    warnings.filterwarnings('ignore', category=FutureWarning)
 
-    cont = joblib.load("/Users/lukeromes/Desktop/Sp500Project/RetrainedModels/ContinuousOneDayFinal.joblib")
+    warnings.filterwarnings("ignore")
 
-    try:
-        model_feature_names = cont.feature_names
-    except AttributeError:
+    # Load trained continuous regression model
+    model = joblib.load(
+        "/Users/lukeromes/Desktop/Sp500Project/RetrainedModels/ContinuousOneDayFinal.joblib"
+    )
+    model_feature_names = model.feature_names
 
-        print("Warning: Feature names not found on 'cont' object. Using placeholder.")
+    df = data.copy()
+    df['Date'] = pd.to_datetime(df['Date'], utc=True)
 
-        pass
+    # Keep identifiers for output
+    identifiers = df[['Date', 'Ticker']].copy()
 
-    X_pred_raw = data.copy()
-
-
-    X_pred_raw['Date'] = pd.to_datetime(X_pred_raw['Date'], utc=True) 
-
-
-    columns_to_drop = [
-        'Daily_Return',
+    # Drop ALL target / leakage columns
+    target_cols = [
         'next_day_pct_change',
+        'Movement',
         'next_5_day_pct_change',
         'Movement_5_day',
         'next_30_day_pct_change',
-        'Movement_30_day',
-        'Movement',
-    
+        'Movement_30_day'
     ]
 
+    X = df.drop(columns=target_cols, errors='ignore')
 
-    X_pred_processed = X_pred_raw.drop(columns=columns_to_drop, errors='ignore')
+    # One-hot encode ticker
+    X = pd.get_dummies(X, columns=['Ticker'], prefix='Ticker', drop_first=True)
+
+    # Convert date to numeric timestamp
+    X['Date'] = X['Date'].astype('int64') // 10**9
+
+    # Ensure numeric safety
+    X = X.apply(pd.to_numeric, errors='coerce').fillna(0)
+
+    # Align with training features
+    X = X.reindex(columns=model_feature_names, fill_value=0)
+
+    # Predict
+    dmatrix = xgb.DMatrix(X)
+    predictions = model.predict(dmatrix)
+
+    # Build results dataframe
+    results = identifiers.copy()
+    results['Predicted_Next_Day_Pct_Change'] = predictions
+    results['Date'] = pd.to_datetime(results['Date'])
+
+    # Filter to prediction date
+    target_date = pd.to_datetime(prediction_date).date()
+    results = results[
+        results['Date'].dt.date == target_date
+    ].copy()
+
+    # Optional: Buy signal (top 25%)
+    q75 = results['Predicted_Next_Day_Pct_Change'].quantile(0.75)
+    results['Buy'] = (
+        results['Predicted_Next_Day_Pct_Change'] >= q75
+    ).astype(int)
+
+    # Sort by expected return
+    results = results.sort_values(
+        'Predicted_Next_Day_Pct_Change',
+        ascending=False
+    )
+
+    # Save output
+    output_path = (
+        "/Users/lukeromes/Desktop/Personal/Sp500Project/"
+        "DailyPredictions/OneDay/Results_df_filtered_cont.csv"
+    )
+    results.to_csv(output_path, index=False)
+
+    return results
 
 
-    identifiers_df = X_pred_processed[['Date', 'Ticker']].copy()
-
-
-    X_pred_ohe = pd.get_dummies(X_pred_processed, columns=['Ticker'], prefix='Ticker', drop_first=True)
-
-
-    if 'Date' in X_pred_ohe.columns:
-        X_pred_ohe['Date'] = X_pred_ohe['Date'].apply(lambda x: x.timestamp())
-        X_pred_final = X_pred_ohe.apply(pd.to_numeric, errors='coerce').fillna(0)
-    else:
-        raise KeyError("The 'Date' column is missing from prediction features. Please check data loading.")
-
-    X_pred_aligned = X_pred_final.reindex(columns=model_feature_names, fill_value=0)
-
-
-    dpred = xgb.DMatrix(X_pred_aligned, feature_names=model_feature_names)
-
-    predictions = cont.predict(dpred)
-
-
-    results_df = identifiers_df.copy()
-    results_df['Predicted_Pct_Change'] = predictions
-
-
+def model_results_merging(binary_df, cont_df):
     import pandas as pd
-    import numpy as np 
 
-    results_df['Date'] = pd.to_datetime(results_df['Date'])
+    # Clean columns
+    binary_df = binary_df.loc[:, ~binary_df.columns.str.contains('^Unnamed')]
+    cont_df = cont_df.loc[:, ~cont_df.columns.str.contains('^Unnamed')]
 
-    target_date = pd.to_datetime(prediction_date)
+    binary_df['Date'] = pd.to_datetime(binary_df['Date'])
+    cont_df['Date'] = pd.to_datetime(cont_df['Date'])
 
-
-    results_df_filtered_cont = results_df[results_df['Date'].dt.date == target_date.date()]
-
-
-    thirdquartile_movement = float(results_df_filtered_cont .describe(include='all').iloc[8,2])
-    secondquartile = float(results_df_filtered_cont .describe(include='all').iloc[7,2])
-
-    threshold = (thirdquartile_movement + secondquartile)/2
-
-    results_df_filtered_cont ['Buy'] = (results_df_filtered_cont ['Predicted_Pct_Change'] >= threshold).astype(int)
-    results_df_filtered_cont = results_df_filtered_cont 
-
-    results_df_filtered_cont = results_df_filtered_cont.sort_values('Predicted_Pct_Change', ascending=False)
-    results_df_filtered_cont.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/OneDay/Results_df_filtered_cont.csv")
-    return results_df_filtered_cont
-
-
-
-def model_results_merging(data1, data2):
-    import pandas as pd
-    data1 = data1.loc[:, ~data1.columns.str.contains('^Unnamed')]
-    data2 = data2.loc[:, ~data2.columns.str.contains('^Unnamed')]
-
-    data1['Date'] = pd.to_datetime(data1['Date']).dt.tz_localize(None)
-    data2['Date'] = pd.to_datetime(data2['Date']).dt.tz_localize(None)
-
-    data1 = data1.drop(columns=['Predicted_Pct_Change'], errors='ignore')
-
-    print(f"Data1 shape: {data1.shape}, Data2 shape: {data2.shape}")
-
+    # Merge on Date, Ticker, Buy
     merged = pd.merge(
-        data2,
-        data1,
+        cont_df,
+        binary_df[['Date', 'Ticker', 'Buy']],
         how='inner',
         on=['Date', 'Ticker', 'Buy']
     )
 
     if merged.empty:
-        print("Warning: Merged dataframe is empty!")
+        print("Warning: merged dataframe is empty")
         return merged
 
     merged_final = (
         merged[merged['Buy'] == 1]
-        .sort_values('Predicted_Pct_Change', ascending=False)
+        .sort_values('next_day_pct_change', ascending=False)
         .head(10)
     )
 
-    output_path = "/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/OneDay/One_Day_Merged_Final.csv"
+    output_path = (
+        "/Users/lukeromes/Desktop/Personal/Sp500Project/"
+        "DailyPredictions/OneDay/One_Day_Merged_Final.csv"
+    )
     merged_final.to_csv(output_path, index=False)
-
-    print(f"Successfully saved to {output_path}")
 
     return merged_final

@@ -5,8 +5,8 @@ import split
 import pandas as pd
 from datetime import date
 
-date1_in_range = "2024-12-1"
-date2_in_range = "2025-12-19"
+date1_in_range = "2024-12-20"
+date2_in_range = "2025-12-26"
 data1 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/Results_df_filtered_binary.csv")
 data2 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/Results_df_filtered_cont.csv")
 data_path = "/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FinalTestData.feather"

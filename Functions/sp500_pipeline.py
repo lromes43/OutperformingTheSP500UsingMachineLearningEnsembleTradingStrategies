@@ -126,14 +126,24 @@ def run_sp500_pipeline(start_date, end_date):
         df['VIX_Close'] = np.nan
 
     print("Generating targets...")
-    df['next_day_pct_change'] = (group['Close'].shift(-1) - df['Close']) / df['Close'] * 100
+    df['next_day_pct_change'] = (
+        df.groupby('Ticker')['Close'].shift(-1) - df['Close']
+    ) / df['Close'] * 100
+
     df['Movement'] = (df['next_day_pct_change'] > 0).astype(int)
 
-    df['next_5_day_pct_change'] = (group['Close'].shift(-5) - df['Close']) / df['Close'] * 100
+    df['next_5_day_pct_change'] = (
+        df.groupby('Ticker')['Close'].shift(-5) - df['Close']
+    ) / df['Close'] * 100
+
     df['Movement_5_day'] = (df['next_5_day_pct_change'] > 0).astype(int)
 
-    df['next_30_day_pct_change'] = (group['Close'].shift(-30) - df['Close']) / df['Close'] * 100
+    df['next_30_day_pct_change'] = (
+        df.groupby('Ticker')['Close'].shift(-30) - df['Close']
+    ) / df['Close'] * 100
+
     df['Movement_30_day'] = (df['next_30_day_pct_change'] > 0).astype(int)
+
 
     for col in ['earnings_bool', 'Split_Indicator']:
         df[col] = 0
