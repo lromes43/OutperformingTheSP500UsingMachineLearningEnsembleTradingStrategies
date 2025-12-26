@@ -178,7 +178,7 @@ def model_results_merging(binary_df, cont_df):
 
     merged_final = (
         merged[merged['Buy'] == 1]
-        .sort_values('next_day_pct_change', ascending=False)
+        .sort_values('Predicted_Next_Day_Pct_Change', ascending=False)
         .head(10)
     )
 
