@@ -62,7 +62,7 @@ def binary_prediction_func(data, prediction_date):
 
     results_df_filtered['Buy'] = (results_df_filtered['Predicted_Movement'] >= threshold).astype(int)
     results_df_filtered_binary = results_df_filtered
-    results_df_filtered_binary = results_df_filtered_binary.sort_values('Predicted_Movement', ascending=True)
+    results_df_filtered_binary = results_df_filtered_binary.sort_values('Predicted_Movement', ascending=False)
     results_df_filtered_binary.to_csv("//Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/Russell/Results_df_filtered_binary.csv")
     return results_df_filtered_binary
 
@@ -151,7 +151,7 @@ def cont_prediction_func(data, prediction_date):
     results_df_filtered_cont ['Buy'] = (results_df_filtered_cont ['Predicted_Pct_Change'] >= threshold).astype(int)
     results_df_filtered_cont = results_df_filtered_cont 
 
-    results_df_filtered_cont = results_df_filtered_cont.sort_values('Predicted_Pct_Change', ascending=True)
+    results_df_filtered_cont = results_df_filtered_cont.sort_values('Predicted_Pct_Change', ascending=False)
     results_df_filtered_cont.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredictions/Russell/Results_df_filtered_cont.csv")
     return results_df_filtered_cont
 
@@ -182,7 +182,7 @@ def model_results_merging(data1, data2):
 
     merged_final = (
         merged[merged['Buy'] == 1]
-        .sort_values('Predicted_Pct_Change', ascending=True)
+        .sort_values('Predicted_Pct_Change', ascending=False)
         .head(10)
     )
 

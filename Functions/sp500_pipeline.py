@@ -13,7 +13,6 @@ def run_sp500_pipeline(start_date, end_date):
     BASE_DIR = "/Users/lukeromes/Desktop/Personal/Sp500Project"
     DATA_DIR = os.path.join(BASE_DIR, "Data")
     DOWNLOAD_DIR = os.path.join(DATA_DIR, "Pulling")
-    FINAL_FEATHER_FILE = os.path.join(DATA_DIR, "FinalTestData.feather")
 
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
     os.makedirs(DATA_DIR, exist_ok=True)
@@ -147,6 +146,7 @@ def run_sp500_pipeline(start_date, end_date):
 
     for col in ['earnings_bool', 'Split_Indicator']:
         df[col] = 0
+    
+    df['Ticker'] = df['Ticker'].astype(str)
 
-    df.reset_index(drop=True).to_feather(FINAL_FEATHER_FILE)
-    print(f"\n SUCCESS: Saved to {FINAL_FEATHER_FILE}")
+    df.reset_index(drop=True).to_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FINALSP500Data.feather")
