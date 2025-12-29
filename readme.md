@@ -103,15 +103,13 @@ access to them) to make next day stock predictions! These two scripts
 include multiple functions to pull, clean and transform the data as well
 as running the models on this new data.
 
-## Merry Christmas!! 🎄🎅🏻
+## SP 500 Stocks Predicted to go up Dec 29th, 2025:
 
-## SP 500 Stocks Predicted to go up Dec 24th, 2025:
+SMCI,ADM,KO,WMB,TSCO,CSX,SLB,NEE,ROST,MDLZ
 
-SMCI,CVS,HPE,WMB,LVS,T,NKE,ADM,IP,CSX
+## Russell 2000 Stocks Predicted to go up Dec 20th, 2025:
 
-## Russell 2000 Stocks Predicted to go up Dec 24th, 2025:
-
-VABK, FPI, VRGV, TDOC, IVR, LOB, BBSI, IIIN, CWCO, PKE
+LAZRQ,,IRBTQ,ZSPC,ZYXI,BARK,BYND,FBLG,MYPS,IPSC,AGL
 
 ## Please reach out to me at romesluke@gmail.com for model access / additional information.
 
