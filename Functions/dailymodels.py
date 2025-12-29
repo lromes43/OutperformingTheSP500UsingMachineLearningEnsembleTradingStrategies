@@ -5,7 +5,7 @@ def binary_prediction_func(data, prediction_date):
 
     # Load model
     binary = joblib.load(
-        "/Users/lukeromes/Desktop/Sp500Project/RetrainedModels/FinalBoostedOneDayClassifier.job.lib"
+        "/Users/lukeromes/Desktop/Sp500Project/RetrainedModels/NEWONEDAYBOOSTED.job.lib"
     )
     model_feature_names = binary.feature_names
 

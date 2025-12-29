@@ -58,7 +58,7 @@ def binary_prediction_func(data, prediction_date):
     thirdquartile_movement = float(results_df.describe(include='all').iloc[8,2])
     secondquartile = float(results_df.describe(include='all').iloc[7,2])
 
-    threshold = (thirdquartile_movement + secondquartile)/2
+    threshold = thirdquartile_movement 
 
     results_df_filtered['Buy'] = (results_df_filtered['Predicted_Movement'] >= threshold).astype(int)
     results_df_filtered_binary = results_df_filtered
