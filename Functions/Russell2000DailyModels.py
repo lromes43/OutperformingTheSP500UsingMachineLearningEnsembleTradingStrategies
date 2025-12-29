@@ -8,7 +8,7 @@ def binary_prediction_func(data, prediction_date):
     import joblib
     import xgboost as xgb
 
-    binary = joblib.load("/Users/lukeromes/Desktop/Sp500Project/RetrainedModels/Russel2000Classifier.job.lib")
+    binary = joblib.load("/Users/lukeromes/Desktop/Sp500Project/RetrainedModels/NEWRUSSEL2000BinaryClassifier.job.lib")
     model_feature_names = binary.feature_names 
 
     df = data.copy() 
@@ -77,7 +77,7 @@ def cont_prediction_func(data, prediction_date):
     import warnings
     warnings.filterwarnings('ignore', category=FutureWarning)
 
-    cont = joblib.load("/Users/lukeromes/Desktop/Sp500Project/RetrainedModels/Russell2000Cont.joblib")
+    cont = joblib.load("/Users/lukeromes/Desktop/Sp500Project/RetrainedModels/NEWRUSSEL2000CONT.joblib")
 
     try:
         model_feature_names = cont.feature_names
