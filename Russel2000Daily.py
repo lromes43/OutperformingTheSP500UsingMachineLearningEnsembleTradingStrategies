@@ -6,12 +6,12 @@ import Russell2000DailyModels
 
 
 date1_in_range = "2025-12-10"
-date2_in_range = "2025-12-26"
+date2_in_range = "2025-12-29"
 russel2000_pipeline.micro_pipeline(start_date = date1_in_range , end_date = date2_in_range)
 
 
 data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FinalRUSSEL2000.feather")
-prediction_date = '2025-12-24'
+prediction_date = '2025-12-26'
 
 
 

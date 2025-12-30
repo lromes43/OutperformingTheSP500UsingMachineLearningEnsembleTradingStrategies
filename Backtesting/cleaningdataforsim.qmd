@@ -1,0 +1,79 @@
+---
+title: "Untitled"
+format: html
+---
+
+
+```{python}
+import pandas as pd 
+data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/ModelFuturePerformanceDataCleaned.feather")
+```
+
+
+```{python}
+data2 = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/CORRECTEDFINALDATA.feather")
+```
+
+
+```{python}
+import pandas as pd
+import numpy as np
+
+
+VIX = [17.28, 17.51, 20.00, 19.83, 22.38, 24.69, 23.66, 26.42, 23.43, 20.52, 18.56, 17.19, 16.35]
+Date = ['2025-11-11', '2025-11-12', '2025-11-13', '2025-11-14', '2025-11-17', 
+        '2025-11-18', '2025-11-19', '2025-11-20', '2025-11-21', '2025-11-24', 
+        '2025-11-25', '2025-11-26', '2025-11-28']
+VIX_df = pd.DataFrame({'Date': Date, 'VIX': VIX})
+
+VIX_df['Date'] = pd.to_datetime(VIX_df['Date']).dt.date
+
+data['Date'] = pd.to_datetime(data['Date']).dt.date
+
+merged = pd.merge(data, VIX_df, how = 'inner', on = 'Date')
+
+```
+
+
+```{python}
+vix_series = merged['VIX']
+
+merged = merged.drop(columns=['VIX'])
+
+merged.insert(loc=26, column='VIX', value=vix_series)
+merged.to_feather('/Users/lukeromes/Desktop/Personal/Sp500Project/Data/ModelFuturePerformanceDataCleaned.feather')
+```
+
+
+```{python}
+import pandas as pd
+test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/ModelFuturePerformanceDataCleaned.feather")
+```
+
+
+
+```{python}
+import pandas as pd
+data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/ModelFuturePerformanceDataCleaned.feather")
+```
+
+
+```{python}
+data = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/ModelFuturePerformanceDataCleaned.feather")
+
+earnings_cols_to_fill = ['EPS Estimate', 'Reported EPS', 'Surprise(%)']
+
+for col in earnings_cols_to_fill:
+    if col in data.columns:
+        data[col] = data[col].fillna(0.0)
+    else:
+        data[col] = 0.0
+
+data.rename(columns={'VIX': '^VIX', 'Two_Week_SD': 'Two_Week_SD '}, inplace=True, errors='ignore')
+data.to_feather('/Users/lukeromes/Desktop/Personal/Sp500Project/Data/ModelFuturePerformanceDataCleaned.feather')
+```
+
+
+```{python}
+test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/ModelFuturePerformanceDataCleaned.feather")
+```

@@ -1,0 +1,97 @@
+---
+title: "Untitled"
+format: html
+---
+
+
+```{python}
+import pandas as pd
+removed_holdings = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/removed_holdings.csv")
+trade_log = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/trade_log_df.csv")
+```
+
+
+```{python}
+import numpy as np
+trade_log['buy_value'] = np.nan
+for i in range(0, len(trade_log)):
+    trade_log['buy_value'].iloc[i] = trade_log['Price'].iloc[i] * trade_log['Shares'].iloc[i]
+```
+
+
+```{python}
+import numpy as np
+removed_holdings['sell_value'] = np.nan
+for i in range(0, len(removed_holdings)):
+    removed_holdings['sell_value'].iloc[i] = removed_holdings['Sell_Price'].iloc[i] * removed_holdings['Shares_Owned'].iloc[i]
+```
+
+
+```{python}
+removed_holdings['Action'] = 'Sell'
+```
+
+```{python}
+merged = pd.merge(removed_holdings, trade_log, how = 'inner', left_on=['Stock', 'Shares_Owned'], right_on= ['Ticker', 'Shares'])
+```
+
+```{python}
+combined_data = merged.groupby('Sell_Date')[['sell_value', 'buy_value']].sum().reset_index()
+```
+
+```{python}
+combined_data['Value'] = (combined_data['sell_value'] - combined_data['buy_value']) / combined_data['buy_value'] * 100
+
+value_df_result = combined_data[['Sell_Date', 'Value']].rename(columns={'Sell_Date': 'Date'})
+
+value_df_result = value_df_result.rename(columns={'Value':'change'})
+value_df_result['Date'] = pd.to_datetime(value_df_result['Date'])
+
+```
+
+```{python}
+value_df_result.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/modelovertime.csv", index=False)
+```
+
+SP500 over time
+
+```{python}
+import yfinance as yf
+import pandas as pd
+from datetime import datetime
+
+ticker_symbol = "^GSPC"
+
+sp500_data = yf.Ticker(ticker_symbol)
+hist_data = sp500_data.history(period="1y")
+hist_data = hist_data.reset_index()
+
+hist_data['Date'] = hist_data['Date'].dt.date
+
+hist_data = hist_data[['Date', 'Close']]
+hist_data['Date'] = pd.to_datetime(hist_data['Date'])
+hist_data = hist_data[hist_data['Date'] >= '2025-09-04']
+
+```
+
+```{python}
+combined_data2 = hist_data.groupby('Date')[['Close']].sum().reset_index()
+combined_data2.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/Result Data/sp_prices.csv")
+```
+
+
+
+```{python}
+combined_data2 ['change'] = np.nan
+for i in range(0, len(combined_data2 )):
+    if i ==0:
+        combined_data2 ['change'] = 0
+    elif i >0: 
+        combined_data2 ['change'].iloc[i] = (combined_data2 ['Close'].iloc[i] - combined_data2 ['Close'].iloc[i-1]) / combined_data2 ['Close'].iloc[i-1] * 100
+sp500_final = combined_data2 [['Date', 'change']]
+sp500_final.to_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/sp500_final.csv", index=False)
+```
+
+
+
+
