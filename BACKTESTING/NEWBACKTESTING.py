@@ -138,7 +138,7 @@ print(f"TOTAL TRADES:         {len(trade_log)}")
 history_df = history_df[history_df['Date'] <= '2025-12-19']
 
 
-sp500 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500testdata.csv")
+sp500 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/SP500testdata.csv")
 shares = float(initial_capital / sp500['Open'][0])
 
 sp500['Shares'] = shares
@@ -152,14 +152,14 @@ sp500_length = len(sp500) -1
 final_sp500 = sp500['Value'][sp500_length]
 sp500_return = float((final_sp500 - initial_sp500) / initial_sp500 )*100
 
-model_return_diff = total_return - sp500_return
+model_return_diff = float(total_return - sp500_return)
 
 
 plt.figure(figsize=(12, 6))
 plt.plot(history_df['Date'], history_df['Total_Value'], color="#130d7a", linewidth=2, label='Strategy Equity Curve')
 plt.plot(sp500['Date'], sp500['Value'], color = '#2ca02c', linewidth=2, label='SP500 Curve')
 plt.axhline(y=initial_capital, color='red', linestyle='--', alpha=0.5, label='Starting Capital')
-plt.title('Backtest Results: Portfolio Value from Nov 12 2025')
+plt.title('Backtest Results: Portfolio Value from Nov 12, 2025')
 plt.xlabel('Date')
 plt.ylabel('Portfolio Value ($)')
 plt.legend()
@@ -173,3 +173,6 @@ trade_log_df = pd.DataFrame(trade_log).to_csv('trade_log.csv', index=False)
 
 #Total Return = 9.07%
 #Sp500 return = .553%
+
+#My model did 8.51% better than sp500 from Nov 13 - Dec 19
+
