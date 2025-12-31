@@ -1,0 +1,113 @@
+---
+title: "Untitled"
+format: html
+---
+
+
+```{python}
+import numpy as np
+import pandas as pd
+from sklearn.datasets import load_breast_cancer, fetch_california_housing
+from sklearn.feature_selection import SelectFromModel
+from sklearn.linear_model import Lasso, LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+```
+
+
+
+```{python}
+test = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TestData.feather")
+train = pd.read_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/TrainData.feather")
+```
+
+
+```{python}
+X_train = train.drop([
+        'Date', 'Ticker',
+        'next_day_pct_change',
+        'Movement',
+        'next_5_day_pct_change',
+        'Movement_5_day',
+        'next_30_day_pct_change',
+        'Movement_30_day'
+    ], axis = 1)
+X_train = X_train.fillna(0)
+X_test = test.drop([
+        'Date',  'Ticker',  
+        'next_day_pct_change',
+        'Movement',
+        'next_5_day_pct_change',
+        'Movement_5_day',
+        'next_30_day_pct_change',
+        'Movement_30_day'
+    ], axis = 1)
+X_test = X_test.fillna(0)
+y_train = train['Movement']
+y_test = test['Movement']
+```
+
+
+```{python}
+scaler = StandardScaler()
+scaler.fit(X_train)
+```
+
+
+
+```{python}
+sel_ = SelectFromModel(
+    LogisticRegression(C=0.5, penalty='l1', solver='liblinear', random_state=10))
+sel_.fit(scaler.transform(X_train), y_train)
+```
+
+
+```{python}
+sel_.get_support()
+```
+
+
+```{python}
+removed_feats = X_train.columns[(sel_.estimator_.coef_ == 0).ravel().tolist()]
+removed_feats
+```
+
+
+```{python}
+X_train_selected = sel_.transform(scaler.transform(X_train))
+X_test_selected = sel_.transform(scaler.transform(X_test))
+```
+
+
+
+```{python}
+X_train_scaled = pd.DataFrame(
+    scaler.transform(X_train), 
+    columns=X_train.columns, 
+    index=X_train.index
+)
+
+
+sel_ = SelectFromModel(
+    LogisticRegression(C=0.5, penalty='l1', solver='liblinear', random_state=10)
+)
+sel_.fit(X_train_scaled, y_train)
+
+
+print(sel_.get_feature_names_out())
+
+
+mask = sel_.get_support() 
+
+
+selected_col_names = X_train.columns[mask]
+
+print(selected_col_names)
+import matplotlib.pyplot as plt
+
+coefs = pd.Series(sel_.estimator_.coef_[0], index=X_train.columns)
+
+coefs[coefs != 0].sort_values().plot(kind='barh', figsize=(10, 8))
+plt.title("Features Selected by Lasso")
+plt.show()
+```

@@ -100,7 +100,7 @@ def cont_prediction_func(data, prediction_date):
         'next_5_day_pct_change',
         'Movement_5_day',
         'next_30_day_pct_change',
-        'Movement_30_day'
+        'Movement_30_day', 
     ]
 
     X = df.drop(columns=target_cols, errors='ignore')
