@@ -15,13 +15,12 @@ baseline.
 # Outcome
 
 This model consistently outpreforms the SP500 on a multitude of
-different range of dates. From September 2nd to November 11th, this
-model achieved a 35% return compared to the SP500 return of 3%. To test
-its effectiveness on future dates not included in the model, this model
-achieved a 14% return from November 12 through November 28th compared to
-the SP500 return of -0.29%. See graphs at the end. of this document as
-well as the Trading Framework Architecture included in the SP500
-Comparsion subfolder.
+different range of dates. From November 13th to December 26th, the one
+day model achieved a 9.07% return compared to the SP500 return of .553%.
+Factor attribution analysis when then performed across the 325 trades
+made by the model, verifying minimal momentum exposure (R² = 0.024) and
+a significant negative VIX beta (β = −0.27, p \< 0.02), validating
+model’s predictive power during volatility shifts.
 
 ## Data
 
@@ -89,11 +88,6 @@ CreatingDataforModelResultsFuture (again working on making more
 streamlined), this will transform the results of the model to a
 plottable format as well as pull the SP500 prices from the same days
 allowing for the model performance to truly be evaluated.
-
-Simulation two consisting of unseen future dates outpreformed the SP500.
-The model resulted in a 14.958% return compared to -0.29% return that
-the SP500 returned during the same time period. During this simulation,
-the model purchases 18 securities and sells 9.
 
 ## Make your own Predictions!
 
