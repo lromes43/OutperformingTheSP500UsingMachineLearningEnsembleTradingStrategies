@@ -54,7 +54,7 @@ def get_predictions(date, model_bin, model_cont):
     })
     
    
-    filtered = res[(res['prob'] >= 0.5) & (res['val'] > 0)]
+    filtered = res[(res['prob'] >= 0.7) & (res['val'] > 0)]
     return filtered if not filtered.empty else pd.DataFrame(columns=cols)
 
 all_dates = sorted(data['Date'].unique())
@@ -175,4 +175,6 @@ trade_log_df = pd.DataFrame(trade_log).to_csv('trade_log.csv', index=False)
 #Sp500 return = .553%
 
 #My model did 8.51% better than sp500 from Nov 13 - Dec 19
+
+
 
