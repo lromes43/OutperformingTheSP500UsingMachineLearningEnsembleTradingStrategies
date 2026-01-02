@@ -36,11 +36,12 @@ def test_pipeline_data_quality():
 def test_split_logic():
     """Step 3: Testing Train/split."""
     data_path = "Data/FINALSP500Data.feather"
-    train_end = "2025-06-30"
-    test_start = "2025-07-01"
+    train_start_date = "2025-11-01"
+    train_end_date = "2025-11-12"
+    test_start_date = "2025 -11-13"
     
-    train, test = train_test_split_by_date_function(data_path, train_end, test_start)
+    train, test = train_test_split_by_date_function(data_path, train_start_date, train_end_date, test_start_date)
     
     assert not train.empty, "Training set is empty"
     assert not test.empty, "Testing set is empty"
-    assert train['Date'].max() <= pd.to_datetime(train_end), "Leakage: Train date > train_end"
+    assert train['Date'].max() <= pd.to_datetime(train_end_date), "Leakage: Train date > train_end"
