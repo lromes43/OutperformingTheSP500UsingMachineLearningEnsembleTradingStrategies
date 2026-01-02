@@ -36,8 +36,8 @@ def test_pipeline_data_quality():
 def test_split_logic():
     """Step 3: Testing Train/split."""
     data_path = "Data/FINALSP500Data.feather"
-    train_end = "2024-01-03"
-    test_start = "2024-01-04"
+    train_end = "2025-01-09"
+    test_start = "2025-01-10"
     
     train, test = train_test_split_by_date_function(data_path, train_end, test_start)
     
