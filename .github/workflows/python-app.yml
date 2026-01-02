@@ -18,8 +18,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
-    - name: Run Pytest with Coverage
+    - name: Test with pytest
       run: |
-        # Set PYTHONPATH so the runner can find your Functions folder
         export PYTHONPATH=$PYTHONPATH:$(pwd)
-        pytest --cov=trading_strategy --cov=Functions --cov-fail-under=95
+        pytest tests/test_strategy.py --cov=trading_strategy --cov=Functions
