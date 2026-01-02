@@ -9,7 +9,7 @@ from datetime import datetime
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DOWNLOAD_DIR = os.path.join(BASE_DIR, "Data")
+DOWNLOAD_DIR = os.path.join(BASE_DIR, "Data/Pulling")
 
 def run_sp500_pipeline(start_date, end_date):
   
@@ -152,9 +152,9 @@ def run_sp500_pipeline(start_date, end_date):
     df = df.reset_index(drop=True)
     
     
-    os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+    os.makedirs(BASE_DIR, exist_ok=True)
 
-    save_path = os.path.join(DOWNLOAD_DIR, "FINALSP500Data.feather")
+    save_path = os.path.join(BASE_DIR, "FINALSP500Data.feather")
     df.to_feather(save_path)
 
     print(f"Pipeline complete! Saved to: {save_path}")

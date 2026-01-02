@@ -26,4 +26,3 @@ data2 = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/DailyPredict
 
 
 dailymodels.model_results_merging(data1, data2)
-
