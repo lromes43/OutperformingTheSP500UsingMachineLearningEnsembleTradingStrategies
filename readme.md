@@ -35,13 +35,23 @@ total of 46 variables (6 output, 40 input). This data was then exported
 to a feather file to improve performance due to its binary, columnar
 format allowing for faster processing speeds and reduced storage needs.
 
-If you navigate to the DataPullingScript, you can enter the start and
-end date of the desired data range you would like. Upon running this
+If you navigate to root folder and find the DataPullingScript, you can
+enter the start and end date of the desired data range you would like as
+well as split the data up to training and testing. Upon running this
 script the functions, sp500 pipeline and split, will run pulling the
 data and creating each of the necessary derived vars. The output data
 can be found as “FinalTestData” as well as the subsequent training and
 test split data which is entitled: “TrainData” and “TestData”. These are
 once again stored as feather files.
+
+Data Integrity, The pipeline achieves a 90.18% completeness score across
+the S&P 500 constituents. This high threshold accounts for delisted
+tickers and intermittent data gaps, ensuring a robust dataset for
+modeling.
+
+Workflow, Clone the repo and push a change to trigger the Pytest
+validation suite. Pipeline parameters (train/test date ranges) are fully
+adjustable to suit your specific backtesting needs.
 
 ## Machine Learning Models
 
