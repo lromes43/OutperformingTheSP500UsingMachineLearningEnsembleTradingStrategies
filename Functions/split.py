@@ -1,5 +1,7 @@
 import pandas as pd
 import os
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DOWNLOAD_DIR = os.path.join(BASE_DIR, "Data")
 
 def train_test_split_by_date_function(data_path, train_end_date, test_start_date):
     data = pd.read_feather(data_path)

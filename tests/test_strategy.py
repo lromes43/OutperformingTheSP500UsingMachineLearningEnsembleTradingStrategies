@@ -7,8 +7,8 @@ from Functions.split import train_test_split_by_date_function
 
 def test_sp500_pipeline_full_execution():
     """Step 1: Run the actual pipeline logic to generate the feather file."""
-    start_date = "2024-01-01"
-    end_date = "2024-01-05"
+    start_date = "2025-11-01"
+    end_date = "2025-12-15"
     
     run_sp500_pipeline(start_date, end_date)
     
