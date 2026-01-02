@@ -80,7 +80,7 @@ print(skew)
 #VIX
 
 trade_log_data = pd.read_csv("/Users/lukeromes/Desktop/Personal/Sp500Project/SP500Comparison/trade_log.csv")
-dates = trade_log_data['Date'].unique()
+dates =data['Date'].unique()
 tickers_list = ["^VIX"]
 start_date = dates[0]
 end_date =  dates[-1]

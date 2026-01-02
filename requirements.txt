@@ -1,0 +1,7 @@
+pandas
+numpy
+yfinance
+pytest
+pytest-mock
+pytest-cov
+pyarrow
