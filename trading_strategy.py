@@ -18,6 +18,6 @@ def prepare_model_data(data_path, train_end, test_start):
     return train_df, test_df
 
 if __name__ == "__main__":
-    DATA_PATH = os.path.join(BASE_DIR, "Data/FINALSP500Data.feather")
+    DATA_PATH = os.path.join(BASE_DIR, "Data", "FINALSP500Data.feather")
     get_and_process_data("2020-01-01", "2024-01-01")
     train, test = prepare_model_data(DATA_PATH, "2023-01-01", "2023-01-02")
