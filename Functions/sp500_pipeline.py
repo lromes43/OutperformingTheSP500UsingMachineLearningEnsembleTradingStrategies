@@ -8,14 +8,14 @@ import warnings
 from datetime import datetime
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DOWNLOAD_DIR = os.path.join(BASE_DIR, "Data")
 
 def run_sp500_pipeline(start_date, end_date):
-    BASE_DIR = "/Users/lukeromes/Desktop/Personal/Sp500Project"
-    DATA_DIR = os.path.join(BASE_DIR, "Data")
-    DOWNLOAD_DIR = os.path.join(DATA_DIR, "Pulling")
+  
 
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-    os.makedirs(DATA_DIR, exist_ok=True)
+   
 
     print("Fetching S&P 500 ticker list...")
     sp500_url = "https://datahub.io/core/s-and-p-500-companies-financials/r/constituents.csv"
@@ -150,3 +150,4 @@ def run_sp500_pipeline(start_date, end_date):
     df['Ticker'] = df['Ticker'].astype(str)
 
     df.reset_index(drop=True).to_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FINALSP500Data.feather")
+    
