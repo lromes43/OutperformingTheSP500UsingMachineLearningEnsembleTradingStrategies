@@ -9,7 +9,7 @@ from datetime import datetime
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DOWNLOAD_DIR = os.path.join(BASE_DIR, "Data/Pulling")
+DOWNLOAD_DIR = os.path.join(BASE_DIR, "Data")
 
 def run_sp500_pipeline(start_date, end_date):
   

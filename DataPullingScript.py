@@ -15,7 +15,7 @@ test_start_date = pd.to_datetime("2025-11-10").tz_localize(None)
 
 
 
-un_sp500_pipeline.run_sp500_pipeline(date1_in_range , date2_in_range )
+run_sp500_pipeline.run_sp500_pipeline(date1_in_range , date2_in_range )
 split.train_test_split_by_date_function(data_path, train_end_date, test_start_date)
 
 
