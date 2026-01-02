@@ -9,7 +9,7 @@ The outcome of this project is multi-fold, the goal is to predict if a stock wil
 
 # Outcome
 
-This model consistently outpreforms the SP500 on a multitude of different range of dates. From November 13th to December 26th, the one day model achieved a 9.07% return compared to the SP500 return of .553%. Factor attribution analysis when then performed across the 325 trades made by the model, verifying minimal momentum exposure (R² = 0.024) and a significant negative VIX beta (β = −0.27, p < 0.02), validating model’s predictive power during volatility shifts.
+This model consistently outpreforms the SP500 on a multitude of different range of dates. From November 13th to December 26th, the one day model achieved a 9.07% return compared to the SP500 return of .553%. Factor attribution analysis was then performed across the 325 trades made by the model, verifying minimal momentum exposure (R² = 0.024) and a significant negative VIX beta (β = −0.27, p < 0.02), validating model’s predictive power during volatility shifts.
 
 
 ## Data 

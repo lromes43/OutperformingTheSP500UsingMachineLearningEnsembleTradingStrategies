@@ -152,7 +152,7 @@ def run_sp500_pipeline(start_date, end_date):
     df = df.reset_index(drop=True)
     
     
-    os.makedirs(BASE_DIR, exist_ok=True)
+    os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
     save_path = os.path.join(BASE_DIR, "FINALSP500Data.feather")
     df.to_feather(save_path)
