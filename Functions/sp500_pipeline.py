@@ -149,5 +149,12 @@ def run_sp500_pipeline(start_date, end_date):
     
     df['Ticker'] = df['Ticker'].astype(str)
 
-    df.reset_index(drop=True).to_feather("/Users/lukeromes/Desktop/Personal/Sp500Project/Data/FINALSP500Data.feather")
+    df = df.reset_index(drop=True)
     
+    
+    os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+
+    save_path = os.path.join(DOWNLOAD_DIR, "FINALSP500Data.feather")
+    df.to_feather(save_path)
+
+    print(f"Pipeline complete! Saved to: {save_path}")
