@@ -44,7 +44,7 @@ can be found as “FinalTestData” as well as the subsequent training and
 test split data which is entitled: “TrainData” and “TestData”. These are
 once again stored as feather files.
 
-Data Integrity, The pipeline achieves a 90.18% completeness score across
+Data Integrity, The pipeline achieves a 95.02% completeness score across
 the S&P 500 constituents. This high threshold accounts for delisted
 tickers and intermittent data gaps, ensuring a robust dataset for
 modeling.
