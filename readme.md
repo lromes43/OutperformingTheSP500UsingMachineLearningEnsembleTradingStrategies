@@ -1,0 +1,128 @@
+# Optimizing Stock Market Performance Using ML Ensemble Models
+
+
+# Introduction
+
+The outcome of this project is multi-fold, the goal is to predict if a
+stock will go up or down in the future across different time horizons
+(1, 5 and 30 Days) and by what percent will the future stock price
+increase or decrease. The success of the model will be determined by not
+only its ability to correctly predict price movements but also its
+ability to act on them. This will be done by the model acting as a hedge
+fund manager of a financial firm trying to outperform the SP500
+baseline.
+
+# Outcome
+
+This model consistently outpreforms the SP500 on a multitude of
+different range of dates. From November 13th to December 26th, the one
+day model achieved a 9.07% return compared to the SP500 return of .553%.
+Factor attribution analysis was then performed across the 325 trades
+made by the model, verifying minimal momentum exposure (R² = 0.024) and
+a significant negative VIX beta (β = −0.27, p \< 0.02), validating
+model’s predictive power during volatility shifts.
+
+## Data
+
+Data used was pulled directly from yahoo finance API (yfinance). The
+initial pulled data included every SP500 stock from November 10th, 2024
+through November 11th, 2025. Initial variables pulled included:(Date,
+Price, Close, High, Low, Open, Volume, Ticker). These first initial
+features were included so the model would be able to uniquely identify
+each stock and its corresponding price via the composite key of Ticker
+and Date. The initial eight variables were expanded upon resulting in a
+total of 46 variables (6 output, 40 input). This data was then exported
+to a feather file to improve performance due to its binary, columnar
+format allowing for faster processing speeds and reduced storage needs.
+
+If you navigate to root folder and find the DataPullingScript, you can
+enter the start and end date of the desired data range you would like as
+well as split the data up to training and testing. Upon running this
+script the functions, sp500 pipeline and split, will run pulling the
+data and creating each of the necessary derived vars. The output data
+can be found as “FinalTestData” as well as the subsequent training and
+test split data which is entitled: “TrainData” and “TestData”. These are
+once again stored as feather files.
+
+Data Integrity, The pipeline achieves a 90.18% completeness score across
+the S&P 500 constituents. This high threshold accounts for delisted
+tickers and intermittent data gaps, ensuring a robust dataset for
+modeling.
+
+Workflow, Clone the repo and push a change to trigger the Pytest
+validation suite. Pipeline parameters (train/test date ranges) are fully
+adjustable to suit your specific backtesting needs.
+
+## Machine Learning Models
+
+Dual XGBoost models were used to conduct the predictions. Please reach
+out to me at romesluke@gmail.com for model access and I would be more
+than willing to share the pre-trained joblib files with you!
+
+## Model Simulation vs Real Data
+
+The final objective that this model set out to accomplish was how well
+it performs in a trading environment. In this study a simulated trading
+environment was used with two different time periods, the testing period
+as well as a range of future dates which the model had not been trained
+nor previously been tested on. Testing dates for the simulation include
+September 3rd, 2025 through November 7th 2025 while the new data
+includes November 11th, 2025 through November 26th, 2025.
+
+The architecture powering this simulation is quite simple as each model,
+the binary and continuous run simulateneously and output and store their
+results. A temporary table for each model is created to hold the results
+along with a dummy variable called “Buy” which is 1 if the model
+predicts future positive movement and 0 if the model does not. These
+temporary tables are then subsetted to only show instances where the buy
+column is equal to one and the two tables, temporary binary and
+temporary continuous are merged on date and ticker ensuring the final
+results are only stocks of which were predicted to go up by both models.
+Next, the final merged table is sorted based on predicted percent change
+and the top 10 stocks are extracted and evenly bought from the initial
+\$100,000 starting capital. This process then repeats for the remainder
+of the dates, but checks if each day’s predictions align with current
+holdings. If the predictions align with the current holdings, the model
+continues, if the current holdings do not match the model predictions,
+the current holdings are sold. The shares and selling price is extracted
+and added to a variable called cash which is then used to invest in new
+securities. (Detailed Diagram can be found in SP500 Comparison
+Subsection)
+
+To accomplish this proceed to the SP500 Comparison subfolder.First open
+the “SP500 Comparsion subfolder” and open
+ModelPerformanceComparedToSp500Test, this scrript will run a
+“simulation” as described above and buy and sell stocks using pretend
+capital. Once this is finished running open the
+CreatingDataforModelResultsFuture (again working on making more
+streamlined), this will transform the results of the model to a
+plottable format as well as pull the SP500 prices from the same days
+allowing for the model performance to truly be evaluated.
+
+## Make your own Predictions!
+
+To do this you will navigate to the DailyPredictionScript or the
+Russel2000Daily where you will be able to use the models (once given
+access to them) to make next day stock predictions! These two scripts
+include multiple functions to pull, clean and transform the data as well
+as running the models on this new data.
+
+## SP 500 Stocks Predicted to go up Dec 29th, 2025:
+
+SMCI,ADM,KO,WMB,TSCO,CSX,SLB,NEE,ROST,MDLZ
+
+## Russell 2000 Stocks Predicted to go up Dec 20th, 2025:
+
+LAZRQ,,IRBTQ,ZSPC,ZYXI,BARK,BYND,FBLG,MYPS,IPSC,AGL
+
+## Please reach out to me at romesluke@gmail.com for model access / additional information.
+
+## Next Steps
+
+In the process of making a streamlit app to make more user friendly.
+
+Want to change the level of detail of the model from daily to hourly
+then eventually minute and second.
+
+Currently training a bunch of other models not included in this
+repository so stayed tuned in the next couple weeks!
