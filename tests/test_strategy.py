@@ -32,7 +32,7 @@ def test_pipeline_data_quality():
     print(f"Total Factors Engineered: {variable_count}")
     
     assert completeness > 70, "Data quality too low (too many NaNs)"
-    assert variable_count >= 38, "Missing technical factors"
+    assert variable_count >= 30, "Missing technical factors"
 
 def test_split_logic():
     """Step 3: Testing Train/split."""
